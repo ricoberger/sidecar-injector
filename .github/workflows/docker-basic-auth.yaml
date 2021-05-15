@@ -1,31 +1,19 @@
-name: Docker
+name: Docker (basic-auth)
 
 on:
   push:
     branches:
       - main
-    tags:
-      - v*
 
 jobs:
-  docker:
-    name: Docker
+  docker-basic-auth:
+    name: Docker (basic-auth)
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-
-      - name: Set Docker Tag
-        id: tag
-        run: |
-          if [[ $GITHUB_REF == refs/tags/* ]]; then
-            DOCKER_TAG="${GITHUB_REF:10}"
-          else
-            DOCKER_TAG="main"
-          fi
-          echo ::set-output name=tag::${DOCKER_TAG}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -45,6 +33,6 @@ jobs:
         with:
           push: true
           context: .
-          file: ./cmd/webhook/Dockerfile
+          file: ./cmd/basicauth/Dockerfile
           platforms: linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8
-          tags: ricoberger/sidecar-injector:${{ steps.tag.outputs.tag }}
+          tags: ricoberger/sidecar-injector:basic-auth
