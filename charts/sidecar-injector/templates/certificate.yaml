@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "sidecar-injector.fullname" . }}
+  labels:
+    {{- include "sidecar-injector.labels" . | nindent 4 }}
+spec:
+  secretName: {{ include "sidecar-injector.fullname" . }}
+  dnsNames:
+    - {{ include "sidecar-injector.fullname" . }}.{{ .Release.Namespace }}.svc
+    - {{ include "sidecar-injector.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
+  issuerRef:
+    name: {{ include "sidecar-injector.fullname" . }}

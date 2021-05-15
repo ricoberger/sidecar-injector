@@ -1,1 +1,1 @@
-# sidecar-injector
+# Sidecar Injector

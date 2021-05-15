@@ -1,0 +1,97 @@
+# Default values for sidecar-injector.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nameOverride: ""
+fullnameOverride: ""
+
+replicas: 1
+
+## Specify a list of image pull secrets, to avoid the DockerHub rate limit or to pull the sidecar-injector image from a
+## private registry.
+## See: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+##
+imagePullSecrets: []
+  # - name: regcred
+
+## Specify security settings for the created Pods. To set the security settings for the sidecar-injector Container use
+## the corresponding "securityContext" field.
+## See: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+##
+podSecurityContext: {}
+  # fsGroup: 2000
+
+## Specify a map of key-value pairs, to assign the Pods to a specific set of nodes.
+## See: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+##
+nodeSelector: {}
+
+## Specify the tolerations for the sidecar-injector Pods.
+## See: https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+##
+tolerations: []
+
+## Specify a node affinity or inter-pod affinity / anti-affinity for an advanced scheduling of the
+## sidecar-injector Pods.
+## See: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+##
+affinity: {}
+
+## Specify additional labels and annotations for the created Pods.
+##
+pod:
+  annotations: {}
+  labels: {}
+
+image:
+  repository: ricoberger/sidecar-injector
+  tag: v0.1.0
+  pullPolicy: IfNotPresent
+
+## Specify security settings for the sidecar-injector Container. They override settings made at the Pod level via the
+## "podSecurityContext" when there is overlap.
+## See: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+##
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+## We usually recommend not to specify default resources and to leave this as a conscious choice for the user. This
+## also increases chances charts run on environments with little resources, such as Minikube. If you do want to
+## specify resources, uncomment the following lines, adjust them as necessary, and remove the curly braces after
+## 'resources:'.
+##
+resources: {}
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+## Specify additional environment variables for the sidecar-injector container.
+##
+env: []
+
+## Specify some settings like log level, log format, etc. for sidecar-injector.
+##
+settings:
+  logLevel: info
+  logFormat: plain
+
+## Set the content of the config.yaml file, which is used by the sidecar-injector container.
+##
+config: |
+  containers: []
+  volumes: []
+  environmentVariables: []
+
+## Set annotations and labels for the created service.
+##
+service:
+  annotations: {}
+  labels: {}

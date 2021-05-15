@@ -1,0 +1,33 @@
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: istio-default-gateway
+  namespace: istio-system
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "*"
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: external-authz-oauth2-proxy.local
+  namespace: istio-system
+spec:
+  hosts:
+    - external-authz-oauth2-proxy.local
+  endpoints:
+    - address: "127.0.0.1"
+  ports:
+    - name: http-oauth2proxy
+      number: 4180
+      protocol: HTTP
+  resolution: STATIC

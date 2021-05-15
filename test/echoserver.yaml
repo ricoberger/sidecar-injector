@@ -1,0 +1,134 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: echoserver
+  labels:
+    namespace: echoserver
+    istio-injection: enabled
+    sidecar-injector.ricoberger.de: enabled
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echoserver
+  namespace: echoserver
+  labels:
+    app: echoserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: echoserver
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        sidecar-injector.ricoberger.de: enabled
+        sidecar-injector.ricoberger.de/container: basic-auth
+      labels:
+        app: echoserver
+    spec:
+      containers:
+        - name: echoserver
+          image: ricoberger/echoserver:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+          livenessProbe:
+            httpGet:
+              port: 8080
+              path: /health
+            initialDelaySeconds: 1
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              port: 8080
+              path: /health
+            initialDelaySeconds: 1
+            timeoutSeconds: 5
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: basic-auth-credentials
+  namespace: echoserver
+data:
+  BASIC_AUTH_PASSWORD: YWRtaW4=
+  BASIC_AUTH_USERNAME: YWRtaW4=
+type: Opaque
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: echoserver
+  namespace: echoserver
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: http
+      protocol: TCP
+      name: http
+    - port: 4180
+      targetPort: http-auth
+      protocol: TCP
+      name: http-auth
+  selector:
+    app: echoserver
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: echoserver
+  namespace: echoserver
+spec:
+  hosts:
+    - echoserver.127.0.0.1.nip.io
+  gateways:
+    - istio-system/istio-default-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /oauth2
+      route:
+        - destination:
+            host: echoserver.echoserver.svc.cluster.local
+            port:
+              number: 4180
+    - route:
+        - destination:
+            host: echoserver.echoserver.svc.cluster.local
+            port:
+              number: 8080
+
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: echoserver
+  namespace: echoserver
+spec:
+  selector:
+    matchLabels:
+      app: echoserver
+  action: CUSTOM
+  provider:
+    name: "external-authz-oauth2-proxy.local"
+  rules:
+    - to:
+        - operation:
+            hosts: ["echoserver.127.0.0.1.nip.io"]

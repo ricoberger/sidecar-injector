@@ -1,0 +1,8 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "sidecar-injector.fullname" . }}
+  labels:
+    {{- include "sidecar-injector.labels" . | nindent 4 }}
+spec:
+  selfSigned: {}
