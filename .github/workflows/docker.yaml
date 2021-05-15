@@ -48,13 +48,3 @@ jobs:
           file: ./cmd/webhook/Dockerfile
           platforms: linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8
           tags: ricoberger/sidecar-injector:${{ steps.tag.outputs.tag }}
-
-      - name: Build and Push Docker Image (basic-auth)
-        id: docker_build_basic_auth
-        uses: docker/build-push-action@v2
-        with:
-          push: true
-          context: .
-          file: ./cmd/basicauth/Dockerfile
-          platforms: linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8
-          tags: ricoberger/sidecar-injector:basic-auth
