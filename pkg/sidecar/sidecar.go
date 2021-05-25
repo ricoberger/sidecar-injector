@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
@@ -13,10 +14,10 @@ import (
 )
 
 const (
-	annotationInjectKey    = "sidecar-injector.ricoberger.de"
-	annotationContainerKey = "sidecar-injector.ricoberger.de/container"
-	annotationVolumeKey    = "sidecar-injector.ricoberger.de/volume"
-	annotationStatusKey    = "sidecar-injector.ricoberger.de/status"
+	annotationInjectKey     = "sidecar-injector.ricoberger.de"
+	annotationContainersKey = "sidecar-injector.ricoberger.de/containers"
+	annotationVolumesKey    = "sidecar-injector.ricoberger.de/volumes"
+	annotationStatusKey     = "sidecar-injector.ricoberger.de/status"
 )
 
 var (
@@ -50,28 +51,32 @@ func (i *Injector) Handle(ctx context.Context, req admission.Request) admission.
 		return admission.Allowed("Already injected.")
 	}
 
-	if containerName, ok := pod.Annotations[annotationContainerKey]; ok && containerName != "" {
-		container, err := getContainer(containerName, i.Config.Containers)
-		if err != nil {
-			logf.WithFields(logrus.Fields{"container-name": containerName}).WithError(err).Errorf("Container was not found.")
-			return admission.Errored(http.StatusBadRequest, err)
-		}
+	if containerNames, ok := pod.Annotations[annotationContainersKey]; ok && containerNames != "" {
+		for _, containerName := range strings.Split(containerNames, ",") {
+			container, err := getContainer(containerName, i.Config.Containers)
+			if err != nil {
+				logf.WithFields(logrus.Fields{"container-name": containerName}).WithError(err).Errorf("Container was not found.")
+				return admission.Errored(http.StatusBadRequest, err)
+			}
 
-		container = addEnvVariables(container, pod.Annotations, i.Config.EnvironmentVariables)
-		pod.Spec.Containers = append(pod.Spec.Containers, container)
+			container = addEnvVariables(container, pod.Annotations, i.Config.EnvironmentVariables)
+			pod.Spec.Containers = append(pod.Spec.Containers, container)
+		}
 	} else {
 		logf.Errorf("Container name is missing.")
 		return admission.Errored(http.StatusBadRequest, fmt.Errorf("container name is missing"))
 	}
 
-	if volumeName, ok := pod.Annotations[annotationVolumeKey]; ok && volumeName != "" {
-		volume, err := getVolume(volumeName, i.Config.Volumes)
-		if err != nil {
-			logf.WithFields(logrus.Fields{"volume-name": volumeName}).WithError(err).Errorf("Volume was not found.")
-			return admission.Errored(http.StatusBadRequest, err)
-		}
+	if volumeNames, ok := pod.Annotations[annotationVolumesKey]; ok && volumeNames != "" {
+		for _, volumeName := range strings.Split(volumeNames, ",") {
+			volume, err := getVolume(volumeName, i.Config.Volumes)
+			if err != nil {
+				logf.WithFields(logrus.Fields{"volume-name": volumeName}).WithError(err).Errorf("Volume was not found.")
+				return admission.Errored(http.StatusBadRequest, err)
+			}
 
-		pod.Spec.Volumes = append(pod.Spec.Volumes, volume)
+			pod.Spec.Volumes = append(pod.Spec.Volumes, volume)
+		}
 	}
 
 	pod.Annotations[annotationStatusKey] = "injected"
@@ -103,11 +108,13 @@ func getContainer(name string, containers []corev1.Container) (corev1.Container,
 
 func addEnvVariables(container corev1.Container, annotations map[string]string, environmentVariables []EnvironmentVariable) corev1.Container {
 	for _, envVar := range environmentVariables {
-		if val, ok := annotations[envVar.Annotation]; ok && val != "" {
-			container.Env = append(container.Env, corev1.EnvVar{
-				Name:  envVar.Name,
-				Value: val,
-			})
+		if envVar.Container == container.Name {
+			if val, ok := annotations[envVar.Annotation]; ok && val != "" {
+				container.Env = append(container.Env, corev1.EnvVar{
+					Name:  envVar.Name,
+					Value: val,
+				})
+			}
 		}
 	}
 

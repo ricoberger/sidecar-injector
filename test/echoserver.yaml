@@ -27,7 +27,7 @@ spec:
     metadata:
       annotations:
         sidecar-injector.ricoberger.de: enabled
-        sidecar-injector.ricoberger.de/container: basic-auth
+        sidecar-injector.ricoberger.de/containers: basic-auth
       labels:
         app: echoserver
     spec:
