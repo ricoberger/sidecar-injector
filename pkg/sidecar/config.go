@@ -9,6 +9,7 @@ import (
 
 type EnvironmentVariable struct {
 	Name       string `yaml:"name"`
+	Container  string `yaml:"container"`
 	Annotation string `yaml:"annotation"`
 }
 
