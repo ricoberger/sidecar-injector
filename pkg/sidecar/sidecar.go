@@ -14,10 +14,11 @@ import (
 )
 
 const (
-	annotationInjectKey     = "sidecar-injector.ricoberger.de"
-	annotationContainersKey = "sidecar-injector.ricoberger.de/containers"
-	annotationVolumesKey    = "sidecar-injector.ricoberger.de/volumes"
-	annotationStatusKey     = "sidecar-injector.ricoberger.de/status"
+	annotationInjectKey         = "sidecar-injector.ricoberger.de"
+	annotationContainersKey     = "sidecar-injector.ricoberger.de/containers"
+	annotationInitContainersKey = "sidecar-injector.ricoberger.de/init-containers"
+	annotationVolumesKey        = "sidecar-injector.ricoberger.de/volumes"
+	annotationStatusKey         = "sidecar-injector.ricoberger.de/status"
 )
 
 var (
@@ -51,6 +52,19 @@ func (i *Injector) Handle(ctx context.Context, req admission.Request) admission.
 		return admission.Allowed("Already injected.")
 	}
 
+	if initContainerNames, ok := pod.Annotations[annotationInitContainersKey]; ok && initContainerNames != "" {
+		for _, initContainerName := range strings.Split(initContainerNames, ",") {
+			container, err := getContainer(initContainerName, i.Config.Containers)
+			if err != nil {
+				logf.WithFields(logrus.Fields{"container-name": initContainerName}).WithError(err).Errorf("Container was not found.")
+				return admission.Errored(http.StatusBadRequest, err)
+			}
+
+			container = addEnvVariables(container, pod.Annotations, i.Config.EnvironmentVariables)
+			pod.Spec.InitContainers = append(pod.Spec.InitContainers, container)
+		}
+	}
+
 	if containerNames, ok := pod.Annotations[annotationContainersKey]; ok && containerNames != "" {
 		for _, containerName := range strings.Split(containerNames, ",") {
 			container, err := getContainer(containerName, i.Config.Containers)
@@ -62,9 +76,6 @@ func (i *Injector) Handle(ctx context.Context, req admission.Request) admission.
 			container = addEnvVariables(container, pod.Annotations, i.Config.EnvironmentVariables)
 			pod.Spec.Containers = append(pod.Spec.Containers, container)
 		}
-	} else {
-		logf.Errorf("Container name is missing.")
-		return admission.Errored(http.StatusBadRequest, fmt.Errorf("container name is missing"))
 	}
 
 	if volumeNames, ok := pod.Annotations[annotationVolumesKey]; ok && volumeNames != "" {

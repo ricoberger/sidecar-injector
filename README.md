@@ -62,6 +62,7 @@ When the sidecar injector is installed in your cluster you have to add the `side
 
 - `sidecar-injector.ricoberger.de: enabled`: Enable the sidecar injection for a Pod.
 - `sidecar-injector.ricoberger.de/containers: <CONTAINER-NAME-1>,<CONTAINER-NAME-2>`: Comma-separated list of container names, which should be used from the configuration file.
+- `sidecar-injector.ricoberger.de/init-containers: <CONTAINER-NAME-1>,<CONTAINER-NAME-2>`: Comma-separated list of container names, which should be used from the configuration file as init containers.
 - `sidecar-injector.ricoberger.de/volumes: <VOLUME-NAME-1>,<VOLUME-NAME-2>`: Comma-separated list of volume names, which should be used from the configuration file.
 
 ## Test
