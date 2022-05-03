@@ -1,0 +1,42 @@
+name: Continuous Integration
+
+on:
+  push:
+
+jobs:
+  go:
+    name: Go
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.18
+
+      - name: Cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Download Dependencies
+        run: |
+          go mod download
+
+      - name: Test
+        run: |
+          go test ./...
+
+      - name: Build
+        run: |
+          make build-webhook
+          make build-basicauth
