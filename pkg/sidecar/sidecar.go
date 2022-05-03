@@ -7,7 +7,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/sirupsen/logrus"
+	"github.com/ricoberger/sidecar-injector/pkg/log"
+	"go.uber.org/zap"
+
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
@@ -21,10 +23,6 @@ const (
 	annotationStatusKey         = "sidecar-injector.ricoberger.de/status"
 )
 
-var (
-	log = logrus.WithFields(logrus.Fields{"package": "sidecar"})
-)
-
 type Injector struct {
 	Client  client.Client
 	Config  *Config
@@ -32,23 +30,21 @@ type Injector struct {
 }
 
 func (i *Injector) Handle(ctx context.Context, req admission.Request) admission.Response {
-	logf := log.WithContext(ctx).WithFields(logrus.Fields{"name": req.Name, "namespace": req.Namespace})
-
 	pod := &corev1.Pod{}
 
 	err := i.decoder.Decode(req, pod)
 	if err != nil {
-		logf.WithError(err).Errorf("Could not decode request.")
+		log.Error("Could not decode request.", zap.Error(err), zap.String("name", req.Name), zap.String("namespace", req.Namespace))
 		return admission.Errored(http.StatusBadRequest, err)
 	}
 
 	if val, ok := pod.Annotations[annotationInjectKey]; !ok || val != "enabled" {
-		logf.Debugf("No injection required.")
+		log.Debug("No injection required.", zap.String("name", req.Name), zap.String("namespace", req.Namespace))
 		return admission.Allowed("No injection required.")
 	}
 
 	if val, ok := pod.Annotations[annotationStatusKey]; ok && val == "injected" {
-		logf.Debugf("Already injected.")
+		log.Debug("Already injected.", zap.String("name", req.Name), zap.String("namespace", req.Namespace))
 		return admission.Allowed("Already injected.")
 	}
 
@@ -56,7 +52,7 @@ func (i *Injector) Handle(ctx context.Context, req admission.Request) admission.
 		for _, initContainerName := range strings.Split(initContainerNames, ",") {
 			container, err := getContainer(initContainerName, i.Config.Containers)
 			if err != nil {
-				logf.WithFields(logrus.Fields{"container-name": initContainerName}).WithError(err).Errorf("Container was not found.")
+				log.Error("Init-Container was not found.", zap.Error(err), zap.String("name", req.Name), zap.String("namespace", req.Namespace), zap.String("init-container", initContainerName))
 				return admission.Errored(http.StatusBadRequest, err)
 			}
 
@@ -69,7 +65,7 @@ func (i *Injector) Handle(ctx context.Context, req admission.Request) admission.
 		for _, containerName := range strings.Split(containerNames, ",") {
 			container, err := getContainer(containerName, i.Config.Containers)
 			if err != nil {
-				logf.WithFields(logrus.Fields{"container-name": containerName}).WithError(err).Errorf("Container was not found.")
+				log.Error("Container was not found.", zap.Error(err), zap.String("name", req.Name), zap.String("namespace", req.Namespace), zap.String("container", containerName))
 				return admission.Errored(http.StatusBadRequest, err)
 			}
 
@@ -82,7 +78,7 @@ func (i *Injector) Handle(ctx context.Context, req admission.Request) admission.
 		for _, volumeName := range strings.Split(volumeNames, ",") {
 			volume, err := getVolume(volumeName, i.Config.Volumes)
 			if err != nil {
-				logf.WithFields(logrus.Fields{"volume-name": volumeName}).WithError(err).Errorf("Volume was not found.")
+				log.Error("Volume was not found.", zap.Error(err), zap.String("name", req.Name), zap.String("namespace", req.Namespace), zap.String("volume", volumeName))
 				return admission.Errored(http.StatusBadRequest, err)
 			}
 
@@ -94,11 +90,11 @@ func (i *Injector) Handle(ctx context.Context, req admission.Request) admission.
 
 	marshaledPod, err := json.Marshal(pod)
 	if err != nil {
-		logf.WithError(err).Errorf("Could not marshal pod.")
+		log.Error("Could not marshal pod.", zap.Error(err), zap.String("name", req.Name), zap.String("namespace", req.Namespace))
 		return admission.Errored(http.StatusInternalServerError, err)
 	}
 
-	logf.Infof("Inject sidecar.")
+	log.Info("Inject sidecar.", zap.String("name", req.Name), zap.String("namespace", req.Namespace))
 	return admission.PatchResponseFromRaw(req.Object.Raw, marshaledPod)
 }
 

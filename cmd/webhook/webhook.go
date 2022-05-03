@@ -5,11 +5,12 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/ricoberger/sidecar-injector/pkg/log"
 	"github.com/ricoberger/sidecar-injector/pkg/sidecar"
 	"github.com/ricoberger/sidecar-injector/pkg/version"
 
-	"github.com/sirupsen/logrus"
 	flag "github.com/spf13/pflag"
+	"go.uber.org/zap"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -18,7 +19,6 @@ import (
 )
 
 var (
-	log         = logrus.WithFields(logrus.Fields{"package": "webhook"})
 	certDir     string
 	configFile  string
 	logFormat   string
@@ -57,31 +57,7 @@ func init() {
 
 func main() {
 	flag.Parse()
-
-	// Configure our logging library. The logs can be written in plain format (the plain format is compatible with
-	// logfmt) or in json format. The default is plain, because it is better to read during development. In a production
-	// environment you should consider to use json, so that the logs can be parsed by a logging system like
-	// Elasticsearch.
-	// Next to the log format it is also possible to configure the log level. The accepted values are "trace", "debug",
-	// "info", "warn", "error", "fatal" and "panic". The default log level is "info". When the log level is set to
-	// "trace" or "debug" we will also print the caller in the logs.
-	if logFormat == "json" {
-		logrus.SetFormatter(&logrus.JSONFormatter{})
-	} else {
-		logrus.SetFormatter(&logrus.TextFormatter{
-			FullTimestamp: true,
-		})
-	}
-
-	lvl, err := logrus.ParseLevel(logLevel)
-	if err != nil {
-		log.WithError(err).WithFields(logrus.Fields{"log.level": logLevel}).Fatal("Could not set log level")
-	}
-	logrus.SetLevel(lvl)
-
-	if lvl == logrus.TraceLevel || lvl == logrus.DebugLevel {
-		logrus.SetReportCaller(true)
-	}
+	log.Setup(logLevel, logFormat)
 
 	// When the version value is set to "true" (--version) we will print the version information for external-authz.
 	// After we printed the version information the service is stopped.
@@ -90,23 +66,23 @@ func main() {
 	if showVersion {
 		v, err := version.Print("sidecar-injector")
 		if err != nil {
-			log.WithError(err).Fatalf("Failed to print version information")
+			log.Fatal("Failed to print version information", zap.Error(err))
 		}
 
 		fmt.Fprintln(os.Stdout, v)
 		return
 	}
 
-	log.WithFields(version.Info()).Infof("Version information")
-	log.WithFields(version.BuildContext()).Infof("Build context")
+	log.Info("Version information", version.Info()...)
+	log.Info("Build context", version.BuildContext()...)
 
 	c, err := sidecar.LoadConfig(configFile)
 	if err != nil {
-		log.WithError(err).Fatalf("Could not load configuration file.")
+		log.Fatal("Could not load configuration file.", zap.Error(err))
 	}
 
 	// Setup a Manager
-	log.Infof("Setting up manager.")
+	log.Info("Setting up manager.")
 	mgr, err := manager.New(config.GetConfigOrDie(), manager.Options{
 		Port:                   8443,
 		CertDir:                certDir,
@@ -116,7 +92,7 @@ func main() {
 		LivenessEndpointName:   "/healthz",
 	})
 	if err != nil {
-		log.WithError(err).Fatalf("Unable to set up overall controller manager.")
+		log.Fatal("Unable to set up overall controller manager.", zap.Error(err))
 	}
 
 	mgr.AddReadyzCheck("readyz", func(req *http.Request) error {
@@ -127,10 +103,10 @@ func main() {
 	})
 
 	// Setup Webhooks
-	log.Infof("Setting up webhook server.")
+	log.Info("Setting up webhook server.")
 	hookServer := mgr.GetWebhookServer()
 
-	log.Infof("Registering webhooks to the webhook server.")
+	log.Info("Registering webhooks to the webhook server.")
 	hookServer.Register("/mutate", &webhook.Admission{
 		Handler: &sidecar.Injector{
 			Client: mgr.GetClient(),
@@ -138,8 +114,8 @@ func main() {
 		},
 	})
 
-	log.Infof("Starting manager.")
+	log.Info("Starting manager.")
 	if err := mgr.Start(signals.SetupSignalHandler()); err != nil {
-		log.WithError(err).Fatalf("Unable to run manager.")
+		log.Fatal("Unable to run manager.", zap.Error(err))
 	}
 }
