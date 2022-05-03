@@ -10,7 +10,7 @@ on:
 jobs:
   docker:
     name: Docker
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -39,8 +39,8 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and Push Docker Image
-        id: docker_build
+      - name: Build and Push Docker Image (webhook)
+        id: docker_build_webhook
         uses: docker/build-push-action@v2
         with:
           push: true
@@ -48,3 +48,13 @@ jobs:
           file: ./cmd/webhook/Dockerfile
           platforms: linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8
           tags: ricoberger/sidecar-injector:${{ steps.tag.outputs.tag }}
+
+      - name: Build and Push Docker Image (basicauth)
+        id: docker_build_basicauth
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          context: .
+          file: ./cmd/basicauth/Dockerfile
+          platforms: linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8
+          tags: ricoberger/sidecar-injector:${{ steps.tag.outputs.tag }}-basic-auth
