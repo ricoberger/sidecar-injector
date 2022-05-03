@@ -50,8 +50,8 @@ func init() {
 
 	flag.StringVar(&certDir, "certs", defaultCertDir, "Folder containing the x509 certificate and key file.")
 	flag.StringVar(&configFile, "config", defaultConfigFile, "Name of the configuration file.")
-	flag.StringVar(&logFormat, "log.format", defaultLogFormat, "Set the output format of the logs. Must be \"plain\" or \"json\".")
-	flag.StringVar(&logLevel, "log.level", defaultLogLevel, "Set the log level. Must be \"trace\", \"debug\", \"info\", \"warn\", \"error\", \"fatal\" or \"panic\".")
+	flag.StringVar(&logFormat, "log.format", defaultLogFormat, "Set the output format of the logs. Must be \"console\" or \"json\".")
+	flag.StringVar(&logLevel, "log.level", defaultLogLevel, "Set the log level. Must be \"debug\", \"info\", \"warn\", \"error\", \"fatal\" or \"panic\".")
 	flag.BoolVar(&showVersion, "version", false, "Print version information.")
 }
 
