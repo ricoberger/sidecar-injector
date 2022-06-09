@@ -30,7 +30,7 @@ func init() {
 		defaultAddress = os.Getenv("BASIC_AUTH_ADDRESS")
 	}
 
-	defaultLogFormat := "plain"
+	defaultLogFormat := "console"
 	if os.Getenv("BASIC_AUTH_LOG_FORMAT") != "" {
 		defaultLogFormat = os.Getenv("BASIC_AUTH_LOG_FORMAT")
 	}
@@ -44,8 +44,8 @@ func init() {
 	basicAuthUsername = os.Getenv("BASIC_AUTH_USERNAME")
 
 	flag.StringVar(&address, "address", defaultAddress, "The address, where the server is listen on.")
-	flag.StringVar(&logFormat, "log.format", defaultLogFormat, "Set the output format of the logs. Must be \"plain\" or \"json\".")
-	flag.StringVar(&logLevel, "log.level", defaultLogLevel, "Set the log level. Must be \"trace\", \"debug\", \"info\", \"warn\", \"error\", \"fatal\" or \"panic\".")
+	flag.StringVar(&logFormat, "log.format", defaultLogFormat, "Set the output format of the logs. Must be \"console\" or \"json\".")
+	flag.StringVar(&logLevel, "log.level", defaultLogLevel, "Set the log level. Must be \"debug\", \"info\", \"warn\", \"error\", \"fatal\" or \"panic\".")
 	flag.BoolVar(&showVersion, "version", false, "Print version information.")
 }
 

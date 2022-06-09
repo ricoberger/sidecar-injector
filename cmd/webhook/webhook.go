@@ -38,7 +38,7 @@ func init() {
 		defaultConfigFile = os.Getenv("WEBHOOK_CONFIG")
 	}
 
-	defaultLogFormat := "plain"
+	defaultLogFormat := "console"
 	if os.Getenv("WEBHOOK_LOG_FORMAT") != "" {
 		defaultLogFormat = os.Getenv("WEBHOOK_LOG_FORMAT")
 	}
