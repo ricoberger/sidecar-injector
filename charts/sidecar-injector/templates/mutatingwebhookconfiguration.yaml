@@ -1,5 +1,5 @@
 ---
-apiVersion: admissionregistration.k8s.io/v1beta1
+apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
   name: {{ include "sidecar-injector.fullname" . }}
@@ -23,3 +23,6 @@ webhooks:
     namespaceSelector:
       matchLabels:
         sidecar-injector.ricoberger.de: enabled
+    admissionReviewVersions: ["v1"]
+    sideEffects: None
+    timeoutSeconds: 10
