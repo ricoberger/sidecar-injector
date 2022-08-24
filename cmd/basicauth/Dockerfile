@@ -1,4 +1,4 @@
-FROM golang:1.18.1-alpine3.15 as build
+FROM golang:1.19.0-alpine3.16 as build
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 RUN echo "Building on $BUILDPLATFORM, for $TARGETPLATFORM" > /log
@@ -9,7 +9,7 @@ RUN go mod download
 COPY . .
 RUN make build-basicauth
 
-FROM alpine:3.15.4
+FROM alpine:3.16.2
 RUN apk update && apk add --no-cache ca-certificates
 RUN mkdir /basicauth
 COPY --from=build /basicauth/bin/basicauth /basicauth
