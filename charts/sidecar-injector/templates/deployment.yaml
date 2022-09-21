@@ -67,6 +67,10 @@ spec:
             - name: certs
               mountPath: /webhook/certs
               readOnly: true
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints: 
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       volumes:
         - name: config
           configMap:
