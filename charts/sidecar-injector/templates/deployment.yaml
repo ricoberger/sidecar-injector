@@ -69,7 +69,7 @@ spec:
               readOnly: true
       {{- with .Values.topologySpreadConstraints }}
       topologySpreadConstraints: 
-        {{- toYaml . | nindent 6 }}
+        {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
         - name: config
