@@ -96,6 +96,12 @@ service:
   annotations: {}
   labels: {}
 
+## Specifies if PodDisruptionBudget should be enabled
+## See: https://kubernetes.io/docs/tasks/run-application/configure-pdb
+##
+podDisruptionBudget: {}
+  # maxUnavailable: 1
+
 ## Topology spread constraints rely on node labels to identify the topology domain(s) that each Node is in.
 ## Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/
 ##
