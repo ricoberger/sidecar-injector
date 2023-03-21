@@ -18,6 +18,7 @@ var (
 	address           string
 	basicAuthPassword string
 	basicAuthUsername string
+	basicAuthRealm    string
 	logFormat         string
 	logLevel          string
 	showVersion       bool
@@ -40,12 +41,18 @@ func init() {
 		defaultLogLevel = os.Getenv("BASIC_AUTH_LOG_LEVEL")
 	}
 
+	defaultRealm := "Restricted Access"
+	if os.Getenv("BASIC_AUTH_REALM") != "" {
+		defaultRealm = os.Getenv("BASIC_AUTH_REALM")
+	}
+
 	basicAuthPassword = os.Getenv("BASIC_AUTH_PASSWORD")
 	basicAuthUsername = os.Getenv("BASIC_AUTH_USERNAME")
 
 	flag.StringVar(&address, "address", defaultAddress, "The address, where the server is listen on.")
 	flag.StringVar(&logFormat, "log.format", defaultLogFormat, "Set the output format of the logs. Must be \"console\" or \"json\".")
 	flag.StringVar(&logLevel, "log.level", defaultLogLevel, "Set the log level. Must be \"debug\", \"info\", \"warn\", \"error\", \"fatal\" or \"panic\".")
+	flag.StringVar(&basicAuthRealm, "realm", defaultRealm, "The realm for the basic authentication.")
 	flag.BoolVar(&showVersion, "version", false, "Print version information.")
 }
 
@@ -81,19 +88,19 @@ func main() {
 
 		auth := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
 		if len(auth) != 2 || auth[0] != "Basic" {
-			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			handleFailedAuth(w)
 			return
 		}
 
 		payload, err := base64.StdEncoding.DecodeString(auth[1])
 		if err != nil {
-			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			handleFailedAuth(w)
 			return
 		}
 
 		pair := strings.SplitN(string(payload), ":", 2)
 		if len(pair) != 2 || pair[0] != basicAuthUsername || pair[1] != basicAuthPassword {
-			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			handleFailedAuth(w)
 			return
 		}
 
@@ -108,4 +115,9 @@ func main() {
 	if err := server.ListenAndServe(); err != http.ErrServerClosed {
 		log.Fatal("Server died unexpected.", zap.Error(err))
 	}
+}
+
+func handleFailedAuth(w http.ResponseWriter) {
+	w.Header.Set("WWW-Authenticate", fmt.Sprintf(`Basic realm="%s", charset="UTF-8"`, basicAuthRealm))
+	http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 }
