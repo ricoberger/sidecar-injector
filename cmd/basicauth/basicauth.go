@@ -118,6 +118,6 @@ func main() {
 }
 
 func handleFailedAuth(w http.ResponseWriter) {
-	w.Header.Set("WWW-Authenticate", fmt.Sprintf(`Basic realm="%s", charset="UTF-8"`, basicAuthRealm))
+	w.Header().Set("WWW-Authenticate", fmt.Sprintf(`Basic realm="%s", charset="UTF-8"`, basicAuthRealm))
 	http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 }
