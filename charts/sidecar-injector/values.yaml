@@ -112,3 +112,11 @@ topologySpreadConstraints: []
   #   labelSelector:
   #     matchLabels:
   #       app.kubernetes.io/name: sidecar-injector
+
+## Limit which requests for namespaced resources are intercepted by the sidecar-injector, based on the labels of the
+## containing namespace.
+## Ref: https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#matching-requests-namespaceselector
+##
+namespaceSelector: {}
+  # matchLabels:
+  #   sidecar-injector.ricoberger.de: enabled

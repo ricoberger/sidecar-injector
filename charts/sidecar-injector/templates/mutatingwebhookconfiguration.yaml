@@ -20,9 +20,10 @@ webhooks:
         apiGroups: [""]
         apiVersions: ["v1"]
         resources: ["pods"]
+    {{- with .Values.namespaceSelector }}
     namespaceSelector:
-      matchLabels:
-        sidecar-injector.ricoberger.de: enabled
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
     admissionReviewVersions: ["v1"]
     sideEffects: None
     timeoutSeconds: 10
