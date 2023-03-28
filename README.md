@@ -58,7 +58,7 @@ config: |
 
 You can also define a list of volumes and a list of environment variables, which should be set from Pod annotations.
 
-When the sidecar injector is installed in your cluster you have to add the `sidecar-injector.ricoberger.de: enabled` label to all namespace, where you want to use the sidecar injector. You also have to set some annotation for your Pods:
+When the sidecar injector is installed in your cluster you have to set some annotation for your Pods:
 
 - `sidecar-injector.ricoberger.de: enabled`: Enable the sidecar injection for a Pod.
 - `sidecar-injector.ricoberger.de/containers: <CONTAINER-NAME-1>,<CONTAINER-NAME-2>`: Comma-separated list of container names, which should be used from the configuration file.
