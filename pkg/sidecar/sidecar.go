@@ -11,6 +11,7 @@ import (
 	"go.uber.org/zap"
 
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
@@ -57,6 +58,7 @@ func (i *Injector) Handle(ctx context.Context, req admission.Request) admission.
 			}
 
 			container = addEnvVariables(container, pod.Annotations, i.Config.EnvironmentVariables)
+			container = setResources(container, annotationInitContainersKey, pod.Annotations)
 			pod.Spec.InitContainers = append(pod.Spec.InitContainers, container)
 		}
 	}
@@ -70,6 +72,7 @@ func (i *Injector) Handle(ctx context.Context, req admission.Request) admission.
 			}
 
 			container = addEnvVariables(container, pod.Annotations, i.Config.EnvironmentVariables)
+			container = setResources(container, annotationContainersKey, pod.Annotations)
 			pod.Spec.Containers = append(pod.Spec.Containers, container)
 		}
 	}
@@ -122,6 +125,47 @@ func addEnvVariables(container corev1.Container, annotations map[string]string, 
 					Value: val,
 				})
 			}
+		}
+	}
+
+	return container
+}
+
+func setResources(container corev1.Container, annotationKey string, annotations map[string]string) corev1.Container {
+	cpuRequestsAnnotation := fmt.Sprintf("%s/%s/%s", annotationKey, container.Name, "cpurequests")
+	cpuLimitsAnnotation := fmt.Sprintf("%s/%s/%s", annotationKey, container.Name, "cpulimits")
+	memoryRequestsAnnotation := fmt.Sprintf("%s/%s/%s", annotationKey, container.Name, "memoryrequests")
+	memoryLimitsAnnotation := fmt.Sprintf("%s/%s/%s", annotationKey, container.Name, "memorylimits")
+
+	if val, ok := annotations[cpuRequestsAnnotation]; ok && val != "" {
+		if quantity, err := resource.ParseQuantity(val); err == nil {
+			container.Resources.Requests["cpu"] = quantity
+		} else {
+			log.Error("Could not parse cpu requests.", zap.String("containerName", container.Name), zap.String("annotation", cpuRequestsAnnotation), zap.String("value", val), zap.Error(err))
+		}
+	}
+
+	if val, ok := annotations[cpuLimitsAnnotation]; ok && val != "" {
+		if quantity, err := resource.ParseQuantity(val); err == nil {
+			container.Resources.Limits["cpu"] = quantity
+		} else {
+			log.Error("Could not parse cpu limits.", zap.String("containerName", container.Name), zap.String("annotation", cpuLimitsAnnotation), zap.String("value", val), zap.Error(err))
+		}
+	}
+
+	if val, ok := annotations[memoryRequestsAnnotation]; ok && val != "" {
+		if quantity, err := resource.ParseQuantity(val); err == nil {
+			container.Resources.Requests["memory"] = quantity
+		} else {
+			log.Error("Could not parse memory requests.", zap.String("containerName", container.Name), zap.String("annotation", memoryRequestsAnnotation), zap.String("value", val), zap.Error(err))
+		}
+	}
+
+	if val, ok := annotations[memoryLimitsAnnotation]; ok && val != "" {
+		if quantity, err := resource.ParseQuantity(val); err == nil {
+			container.Resources.Limits["memory"] = quantity
+		} else {
+			log.Error("Could not parse memory limits.", zap.String("containerName", container.Name), zap.String("annotation", memoryLimitsAnnotation), zap.String("value", val), zap.Error(err))
 		}
 	}
 

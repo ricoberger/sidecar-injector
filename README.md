@@ -65,6 +65,22 @@ When the sidecar injector is installed in your cluster you have to set some anno
 - `sidecar-injector.ricoberger.de/init-containers: <CONTAINER-NAME-1>,<CONTAINER-NAME-2>`: Comma-separated list of container names, which should be used from the configuration file as init containers.
 - `sidecar-injector.ricoberger.de/volumes: <VOLUME-NAME-1>,<VOLUME-NAME-2>`: Comma-separated list of volume names, which should be used from the configuration file.
 
+### Resources
+
+Since the injected sidecars might need different resources depending on the service where they are injected it is also possible to overwrite the CPU Requests / Limits and Memory Requests and Limits via an annotation:
+
+- `sidecar-injector.ricoberger.de/containers/<CONTAINER_NAME>/cpurequests`
+- `sidecar-injector.ricoberger.de/containers/<CONTAINER_NAME>/cpulimits`
+- `sidecar-injector.ricoberger.de/containers/<CONTAINER_NAME>/memoryrequests`
+- `sidecar-injector.ricoberger.de/containers/<CONTAINER_NAME>/memorylimits`
+
+The same can be done for init containers by using the following annotations:
+
+- `sidecar-injector.ricoberger.de/init-containers/<CONTAINER_NAME>/cpurequests`
+- `sidecar-injector.ricoberger.de/init-containers/<CONTAINER_NAME>/cpulimits`
+- `sidecar-injector.ricoberger.de/init-containers/<CONTAINER_NAME>/memoryrequests`
+- `sidecar-injector.ricoberger.de/init-containers/<CONTAINER_NAME>/memorylimits`
+
 ## Test
 
 To test the sidecar injector locally you can run the `./test/test.sh` shell script. This script will create a kind cluster and installs Istio and the cert-manager into the cluster. After that it will install the sidecar injector and a service named echoserver.
