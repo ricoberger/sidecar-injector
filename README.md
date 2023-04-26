@@ -65,21 +65,53 @@ When the sidecar injector is installed in your cluster you have to set some anno
 - `sidecar-injector.ricoberger.de/init-containers: <CONTAINER-NAME-1>,<CONTAINER-NAME-2>`: Comma-separated list of container names, which should be used from the configuration file as init containers.
 - `sidecar-injector.ricoberger.de/volumes: <VOLUME-NAME-1>,<VOLUME-NAME-2>`: Comma-separated list of volume names, which should be used from the configuration file.
 
+### Environment Variables
+
+It is possible to set additional environment variables for the injected sidecar via annotations. The environment variables which can be injected must be defined in the `environmentVariables` section in the config, e.g.
+
+```yaml
+config: |
+  environmentVariables:
+    - name: ENV_NAME
+      container: <CONTAINER-NAME>
+      annotation: sidecar-injector.ricoberger.de/envname
+```
+
+With this configuration a user can then use the `sidecar-injector.ricoberger.de/envname` annotation to set the value of the `ENV_NAME` environment variable in the specified `<CONTAINER-NAME>`:
+
+```yaml
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: example
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: example
+  template:
+    metadata:
+      annotations:
+        sidecar-injector.ricoberger.de: enabled
+        sidecar-injector.ricoberger.de/envname: envvalue
+```
+
 ### Resources
 
 Since the injected sidecars might need different resources depending on the service where they are injected it is also possible to overwrite the CPU Requests / Limits and Memory Requests and Limits via an annotation:
 
-- `sidecar-injector.ricoberger.de/containers/<CONTAINER_NAME>/cpurequests`
-- `sidecar-injector.ricoberger.de/containers/<CONTAINER_NAME>/cpulimits`
-- `sidecar-injector.ricoberger.de/containers/<CONTAINER_NAME>/memoryrequests`
-- `sidecar-injector.ricoberger.de/containers/<CONTAINER_NAME>/memorylimits`
+- `sidecar-injector.ricoberger.de/containers/<CONTAINER-NAME>/cpurequests`
+- `sidecar-injector.ricoberger.de/containers/<CONTAINER-NAME>/cpulimits`
+- `sidecar-injector.ricoberger.de/containers/<CONTAINER-NAME>/memoryrequests`
+- `sidecar-injector.ricoberger.de/containers/<CONTAINER-NAME>/memorylimits`
 
 The same can be done for init containers by using the following annotations:
 
-- `sidecar-injector.ricoberger.de/init-containers/<CONTAINER_NAME>/cpurequests`
-- `sidecar-injector.ricoberger.de/init-containers/<CONTAINER_NAME>/cpulimits`
-- `sidecar-injector.ricoberger.de/init-containers/<CONTAINER_NAME>/memoryrequests`
-- `sidecar-injector.ricoberger.de/init-containers/<CONTAINER_NAME>/memorylimits`
+- `sidecar-injector.ricoberger.de/init-containers/<CONTAINER-NAME>/cpurequests`
+- `sidecar-injector.ricoberger.de/init-containers/<CONTAINER-NAME>/cpulimits`
+- `sidecar-injector.ricoberger.de/init-containers/<CONTAINER-NAME>/memoryrequests`
+- `sidecar-injector.ricoberger.de/init-containers/<CONTAINER-NAME>/memorylimits`
 
 ## Test
 
