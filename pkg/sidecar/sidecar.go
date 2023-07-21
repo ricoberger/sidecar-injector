@@ -27,13 +27,13 @@ const (
 type Injector struct {
 	Client  client.Client
 	Config  *Config
-	decoder *admission.Decoder
+	Decoder *admission.Decoder
 }
 
 func (i *Injector) Handle(ctx context.Context, req admission.Request) admission.Response {
 	pod := &corev1.Pod{}
 
-	err := i.decoder.Decode(req, pod)
+	err := i.Decoder.Decode(req, pod)
 	if err != nil {
 		log.Error("Could not decode request.", zap.Error(err), zap.String("name", req.Name), zap.String("namespace", req.Namespace))
 		return admission.Errored(http.StatusBadRequest, err)
@@ -99,11 +99,6 @@ func (i *Injector) Handle(ctx context.Context, req admission.Request) admission.
 
 	log.Info("Inject sidecar.", zap.String("name", req.Name), zap.String("namespace", req.Namespace))
 	return admission.PatchResponseFromRaw(req.Object.Raw, marshaledPod)
-}
-
-func (i *Injector) InjectDecoder(d *admission.Decoder) error {
-	i.decoder = d
-	return nil
 }
 
 func getContainer(name string, containers []corev1.Container) (corev1.Container, error) {
