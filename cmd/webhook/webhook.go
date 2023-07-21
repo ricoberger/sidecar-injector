@@ -16,6 +16,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
 var (
@@ -109,8 +110,9 @@ func main() {
 	log.Info("Registering webhooks to the webhook server.")
 	hookServer.Register("/mutate", &webhook.Admission{
 		Handler: &sidecar.Injector{
-			Client: mgr.GetClient(),
-			Config: c,
+			Client:  mgr.GetClient(),
+			Config:  c,
+			Decoder: admission.NewDecoder(mgr.GetScheme()),
 		},
 	})
 
