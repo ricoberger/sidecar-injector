@@ -2,16 +2,17 @@ package main
 
 import (
 	"encoding/base64"
+	goflag "flag"
 	"fmt"
 	"net/http"
 	"os"
 	"strings"
 
-	"github.com/ricoberger/sidecar-injector/pkg/log"
 	"github.com/ricoberger/sidecar-injector/pkg/version"
 
 	flag "github.com/spf13/pflag"
-	"go.uber.org/zap"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 )
 
 var (
@@ -19,9 +20,8 @@ var (
 	basicAuthPassword string
 	basicAuthUsername string
 	basicAuthRealm    string
-	logFormat         string
-	logLevel          string
 	showVersion       bool
+	log               = logf.Log.WithName("basicauth")
 )
 
 // init is used to define all flags for external-authz.
@@ -29,16 +29,6 @@ func init() {
 	defaultAddress := ":4180"
 	if os.Getenv("BASIC_AUTH_ADDRESS") != "" {
 		defaultAddress = os.Getenv("BASIC_AUTH_ADDRESS")
-	}
-
-	defaultLogFormat := "console"
-	if os.Getenv("BASIC_AUTH_LOG_FORMAT") != "" {
-		defaultLogFormat = os.Getenv("BASIC_AUTH_LOG_FORMAT")
-	}
-
-	defaultLogLevel := "info"
-	if os.Getenv("BASIC_AUTH_LOG_LEVEL") != "" {
-		defaultLogLevel = os.Getenv("BASIC_AUTH_LOG_LEVEL")
 	}
 
 	defaultRealm := "Restricted Access"
@@ -50,15 +40,19 @@ func init() {
 	basicAuthUsername = os.Getenv("BASIC_AUTH_USERNAME")
 
 	flag.StringVar(&address, "address", defaultAddress, "The address, where the server is listen on.")
-	flag.StringVar(&logFormat, "log.format", defaultLogFormat, "Set the output format of the logs. Must be \"console\" or \"json\".")
-	flag.StringVar(&logLevel, "log.level", defaultLogLevel, "Set the log level. Must be \"debug\", \"info\", \"warn\", \"error\", \"fatal\" or \"panic\".")
 	flag.StringVar(&basicAuthRealm, "realm", defaultRealm, "The realm for the basic authentication.")
 	flag.BoolVar(&showVersion, "version", false, "Print version information.")
 }
 
 func main() {
+	opts := zap.Options{}
+	opts.BindFlags(goflag.CommandLine)
+
+	flag.CommandLine.AddGoFlagSet(goflag.CommandLine)
 	flag.Parse()
-	log.Setup(logLevel, logFormat)
+
+	logger := zap.New(zap.UseFlagOptions(&opts))
+	logf.SetLogger(logger)
 
 	// When the version value is set to "true" (--version) we will print the version information for external-authz.
 	// After we printed the version information the service is stopped.
@@ -67,7 +61,8 @@ func main() {
 	if showVersion {
 		v, err := version.Print("basic-auth")
 		if err != nil {
-			log.Fatal("Failed to print version information", zap.Error(err))
+			log.Error(err, "Failed to print version information")
+			os.Exit(1)
 		}
 
 		fmt.Fprintln(os.Stdout, v)
@@ -84,7 +79,7 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 	})
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		log.Info("Received request", zap.String("host", r.Host), zap.String("address", r.RemoteAddr), zap.String("method", r.Method), zap.String("requestURI", r.RequestURI), zap.String("proto", r.Proto), zap.String("useragent", r.UserAgent()))
+		log.Info("Received request", "host", r.Host, "address", r.RemoteAddr, "method", r.Method, "requestURI", r.RequestURI, "proto", r.Proto, "useragent", r.UserAgent())
 
 		auth := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
 		if len(auth) != 2 || auth[0] != "Basic" {
@@ -113,7 +108,8 @@ func main() {
 	}
 
 	if err := server.ListenAndServe(); err != http.ErrServerClosed {
-		log.Fatal("Server died unexpected.", zap.Error(err))
+		log.Error(err, "Server died unexpected.")
+		os.Exit(1)
 	}
 }
 

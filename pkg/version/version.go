@@ -5,9 +5,6 @@ import (
 	"runtime"
 	"strings"
 	"text/template"
-
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
 // Build information. Populated at build-time.
@@ -48,11 +45,11 @@ func Print(program string) (string, error) {
 }
 
 // Info returns version, branch and revision information.
-func Info() []zapcore.Field {
-	return []zapcore.Field{zap.String("version", Version), zap.String("branch", Branch), zap.String("revision", Revision)}
+func Info() []any {
+	return []any{"version", Version, "branch", Branch, "revision", Revision}
 }
 
 // BuildContext returns goVersion, buildUser and buildDate information.
-func BuildContext() []zapcore.Field {
-	return []zapcore.Field{zap.String("go", GoVersion), zap.String("user", BuildUser), zap.String("date", BuildDate)}
+func BuildContext() []any {
+	return []any{"go", GoVersion, "user", BuildUser, "date", BuildDate}
 }

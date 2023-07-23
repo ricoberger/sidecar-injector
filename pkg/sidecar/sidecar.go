@@ -7,12 +7,10 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ricoberger/sidecar-injector/pkg/log"
-	"go.uber.org/zap"
-
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
@@ -22,6 +20,10 @@ const (
 	annotationInitContainersKey = "sidecar-injector.ricoberger.de/init-containers"
 	annotationVolumesKey        = "sidecar-injector.ricoberger.de/volumes"
 	annotationStatusKey         = "sidecar-injector.ricoberger.de/status"
+)
+
+var (
+	log = logf.Log.WithName("sidecar")
 )
 
 type Injector struct {
@@ -35,17 +37,17 @@ func (i *Injector) Handle(ctx context.Context, req admission.Request) admission.
 
 	err := i.Decoder.Decode(req, pod)
 	if err != nil {
-		log.Error("Could not decode request.", zap.Error(err), zap.String("name", req.Name), zap.String("namespace", req.Namespace))
+		log.Error(err, "Could not decode request.", "name", req.Name, "namespace", req.Namespace)
 		return admission.Errored(http.StatusBadRequest, err)
 	}
 
 	if val, ok := pod.Annotations[annotationInjectKey]; !ok || val != "enabled" {
-		log.Debug("No injection required.", zap.String("name", req.Name), zap.String("namespace", req.Namespace))
+		log.Info("No injection required.", "name", req.Name, "namespace", req.Namespace)
 		return admission.Allowed("No injection required.")
 	}
 
 	if val, ok := pod.Annotations[annotationStatusKey]; ok && val == "injected" {
-		log.Debug("Already injected.", zap.String("name", req.Name), zap.String("namespace", req.Namespace))
+		log.Info("Already injected.", "name", req.Name, "namespace", req.Namespace)
 		return admission.Allowed("Already injected.")
 	}
 
@@ -53,7 +55,7 @@ func (i *Injector) Handle(ctx context.Context, req admission.Request) admission.
 		for _, initContainerName := range strings.Split(initContainerNames, ",") {
 			container, err := getContainer(initContainerName, i.Config.Containers)
 			if err != nil {
-				log.Error("Init-Container was not found.", zap.Error(err), zap.String("name", req.Name), zap.String("namespace", req.Namespace), zap.String("init-container", initContainerName))
+				log.Error(err, "Init-Container was not found.", "name", req.Name, "namespace", req.Namespace, "init-container", initContainerName)
 				return admission.Errored(http.StatusBadRequest, err)
 			}
 
@@ -67,7 +69,7 @@ func (i *Injector) Handle(ctx context.Context, req admission.Request) admission.
 		for _, containerName := range strings.Split(containerNames, ",") {
 			container, err := getContainer(containerName, i.Config.Containers)
 			if err != nil {
-				log.Error("Container was not found.", zap.Error(err), zap.String("name", req.Name), zap.String("namespace", req.Namespace), zap.String("container", containerName))
+				log.Error(err, "Container was not found.", "name", req.Name, "namespace", req.Namespace, "container", containerName)
 				return admission.Errored(http.StatusBadRequest, err)
 			}
 
@@ -81,7 +83,7 @@ func (i *Injector) Handle(ctx context.Context, req admission.Request) admission.
 		for _, volumeName := range strings.Split(volumeNames, ",") {
 			volume, err := getVolume(volumeName, i.Config.Volumes)
 			if err != nil {
-				log.Error("Volume was not found.", zap.Error(err), zap.String("name", req.Name), zap.String("namespace", req.Namespace), zap.String("volume", volumeName))
+				log.Error(err, "Volume was not found.", "name", req.Name, "namespace", req.Namespace, "volume", volumeName)
 				return admission.Errored(http.StatusBadRequest, err)
 			}
 
@@ -93,11 +95,11 @@ func (i *Injector) Handle(ctx context.Context, req admission.Request) admission.
 
 	marshaledPod, err := json.Marshal(pod)
 	if err != nil {
-		log.Error("Could not marshal pod.", zap.Error(err), zap.String("name", req.Name), zap.String("namespace", req.Namespace))
+		log.Error(err, "Could not marshal pod.", "name", req.Name, "namespace", req.Namespace)
 		return admission.Errored(http.StatusInternalServerError, err)
 	}
 
-	log.Info("Inject sidecar.", zap.String("name", req.Name), zap.String("namespace", req.Namespace))
+	log.Info("Inject sidecar.", "name", req.Name, "namespace", req.Namespace)
 	return admission.PatchResponseFromRaw(req.Object.Raw, marshaledPod)
 }
 
@@ -133,34 +135,38 @@ func setResources(container corev1.Container, annotationKey string, annotations 
 	memoryLimitsAnnotation := fmt.Sprintf("%s/%s/%s", annotationKey, container.Name, "memorylimits")
 
 	if val, ok := annotations[cpuRequestsAnnotation]; ok && val != "" {
-		if quantity, err := resource.ParseQuantity(val); err == nil {
-			container.Resources.Requests["cpu"] = quantity
+		quantity, err := resource.ParseQuantity(val)
+		if err != nil {
+			log.Error(err, "Could not parse cpu requests.", "containerName", container.Name, "annotation", cpuRequestsAnnotation, "value", val)
 		} else {
-			log.Error("Could not parse cpu requests.", zap.String("containerName", container.Name), zap.String("annotation", cpuRequestsAnnotation), zap.String("value", val), zap.Error(err))
+			container.Resources.Requests["cpu"] = quantity
 		}
 	}
 
 	if val, ok := annotations[cpuLimitsAnnotation]; ok && val != "" {
-		if quantity, err := resource.ParseQuantity(val); err == nil {
-			container.Resources.Limits["cpu"] = quantity
+		quantity, err := resource.ParseQuantity(val)
+		if err != nil {
+			log.Error(err, "Could not parse cpu limits.", "containerName", container.Name, "annotation", cpuLimitsAnnotation, "value", val)
 		} else {
-			log.Error("Could not parse cpu limits.", zap.String("containerName", container.Name), zap.String("annotation", cpuLimitsAnnotation), zap.String("value", val), zap.Error(err))
+			container.Resources.Limits["cpu"] = quantity
 		}
 	}
 
 	if val, ok := annotations[memoryRequestsAnnotation]; ok && val != "" {
-		if quantity, err := resource.ParseQuantity(val); err == nil {
-			container.Resources.Requests["memory"] = quantity
+		quantity, err := resource.ParseQuantity(val)
+		if err != nil {
+			log.Error(err, "Could not parse memory requests.", "containerName", container.Name, "annotation", memoryRequestsAnnotation, "value", val)
 		} else {
-			log.Error("Could not parse memory requests.", zap.String("containerName", container.Name), zap.String("annotation", memoryRequestsAnnotation), zap.String("value", val), zap.Error(err))
+			container.Resources.Requests["memory"] = quantity
 		}
 	}
 
 	if val, ok := annotations[memoryLimitsAnnotation]; ok && val != "" {
-		if quantity, err := resource.ParseQuantity(val); err == nil {
-			container.Resources.Limits["memory"] = quantity
+		quantity, err := resource.ParseQuantity(val)
+		if err != nil {
+			log.Error(err, "Could not parse memory limits.", "containerName", container.Name, "annotation", memoryLimitsAnnotation, "value", val)
 		} else {
-			log.Error("Could not parse memory limits.", zap.String("containerName", container.Name), zap.String("annotation", memoryLimitsAnnotation), zap.String("value", val), zap.Error(err))
+			container.Resources.Limits["memory"] = quantity
 		}
 	}
 

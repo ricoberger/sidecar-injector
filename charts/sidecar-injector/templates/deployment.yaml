@@ -30,11 +30,10 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with .Values.args }}
           args:
-            - --certs=/webhook/certs
-            - --config=/webhook/config.yaml
-            - --log.level={{ .Values.settings.logLevel }}
-            - --log.format={{ .Values.settings.logFormat }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- with .Values.env }}
           env:
             {{- toYaml . | nindent 12 }}
@@ -68,7 +67,7 @@ spec:
               mountPath: /webhook/certs
               readOnly: true
       {{- with .Values.topologySpreadConstraints }}
-      topologySpreadConstraints: 
+      topologySpreadConstraints:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
