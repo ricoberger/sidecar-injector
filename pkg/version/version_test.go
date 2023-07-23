@@ -6,8 +6,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
 func TestPrint(t *testing.T) {
@@ -30,7 +28,7 @@ func TestInfo(t *testing.T) {
 	Branch = "main"
 
 	fields := Info()
-	require.Equal(t, []zapcore.Field{zap.String("version", "v0.4.0"), zap.String("branch", "main"), zap.String("revision", "cc373f263575773f1349bbd354e803cc85f9edcd")}, fields)
+	require.Equal(t, []any{"version", "v0.4.0", "branch", "main", "revision", "cc373f263575773f1349bbd354e803cc85f9edcd"}, fields)
 }
 
 func TestBuildContext(t *testing.T) {
@@ -40,5 +38,5 @@ func TestBuildContext(t *testing.T) {
 	BuildDate = "2022-05-03@20:00:00"
 
 	fields := BuildContext()
-	require.Equal(t, []zapcore.Field{zap.String("go", goVersion), zap.String("user", "root"), zap.String("date", "2022-05-03@20:00:00")}, fields)
+	require.Equal(t, []any{"go", goVersion, "user", "root", "date", "2022-05-03@20:00:00"}, fields)
 }

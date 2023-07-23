@@ -45,7 +45,7 @@ pod:
 
 image:
   repository: ricoberger/sidecar-injector
-  tag: v0.7.1
+  tag: v0.8.0
   pullPolicy: IfNotPresent
 
 ## Specify security settings for the sidecar-injector Container. They override settings made at the Pod level via the
@@ -77,11 +77,19 @@ resources: {}
 ##
 env: []
 
-## Specify some settings like log level, log format, etc. for sidecar-injector.
+## Specify the commandline arguments for the sidecar-injector container.
 ##
-settings:
-  logLevel: info
-  logFormat: plain
+## The "--certs" and "--config" arguments are required and should not be changed. Additionally you can customize the
+## logging behavior via the following arguments:
+##   --zap-devel                         Development Mode defaults(encoder=consoleEncoder,logLevel=Debug,stackTraceLevel=Warn). Production Mode defaults(encoder=jsonEncoder,logLevel=Info,stackTraceLevel=Error)
+##   --zap-encoder encoder               Zap log encoding (one of 'json' or 'console')
+##   --zap-log-level level               Zap Level to configure the verbosity of logging. Can be one of 'debug', 'info', 'error', or any integer value > 0 which corresponds to custom debug levels of increasing verbosity
+##   --zap-stacktrace-level level        Zap Level at and above which stacktraces are captured (one of 'info', 'error', 'panic').
+##   --zap-time-encoding time-encoding   Zap time encoding (one of 'epoch', 'millis', 'nano', 'iso8601', 'rfc3339' or 'rfc3339nano'). Defaults to 'epoch'.
+##
+args:
+  - --certs=/webhook/certs
+  - --config=/webhook/config.yaml
 
 ## Set the content of the config.yaml file, which is used by the sidecar-injector container.
 ##
