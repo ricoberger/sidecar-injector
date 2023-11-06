@@ -1,7 +1,7 @@
 package sidecar
 
 import (
-	"io/ioutil"
+	"os"
 
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/yaml"
@@ -20,7 +20,7 @@ type Config struct {
 }
 
 func LoadConfig(file string) (*Config, error) {
-	configContent, err := ioutil.ReadFile(file)
+	configContent, err := os.ReadFile(file)
 	if err != nil {
 		return nil, err
 	}
