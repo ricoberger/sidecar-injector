@@ -1,0 +1,37 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "docker"
+    directory: "/cmd/webhook"
+    schedule:
+      interval: "monthly"
+    groups:
+      docker-webhook:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "docker"
+    directory: "/cmd/basicauth"
+    schedule:
+      interval: "monthly"
+    groups:
+      docker-bacsicauth:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "gomod"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      gomod:
+        patterns:
+          - "*"
