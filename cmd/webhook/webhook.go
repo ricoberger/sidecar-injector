@@ -16,6 +16,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
@@ -81,12 +82,16 @@ func main() {
 	// Setup a Manager
 	log.Info("Settings up manager.")
 	mgr, err := manager.New(config.GetConfigOrDie(), manager.Options{
-		Port:                   8443,
-		CertDir:                certDir,
-		MetricsBindAddress:     ":8081",
+		WebhookServer: webhook.NewServer(webhook.Options{
+			Port:    8443,
+			CertDir: certDir,
+		}),
 		HealthProbeBindAddress: ":8080",
 		ReadinessEndpointName:  "/readyz",
 		LivenessEndpointName:   "/healthz",
+		Metrics: metricsserver.Options{
+			BindAddress: ":8081",
+		},
 	})
 	if err != nil {
 		log.Error(err, "Unable to set up overall controller manager.")
