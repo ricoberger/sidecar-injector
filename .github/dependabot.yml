@@ -4,6 +4,8 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+    assignees:
+      - "ricoberger"
     groups:
       github-actions:
         patterns:
@@ -13,6 +15,8 @@ updates:
     directory: "/cmd/webhook"
     schedule:
       interval: "monthly"
+    assignees:
+      - "ricoberger"
     groups:
       docker-webhook:
         patterns:
@@ -22,6 +26,8 @@ updates:
     directory: "/cmd/basicauth"
     schedule:
       interval: "monthly"
+    assignees:
+      - "ricoberger"
     groups:
       docker-bacsicauth:
         patterns:
@@ -31,6 +37,8 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    assignees:
+      - "ricoberger"
     groups:
       gomod:
         patterns:
