@@ -128,3 +128,7 @@ topologySpreadConstraints: []
 namespaceSelector: {}
   # matchLabels:
   #   sidecar-injector.ricoberger.de: enabled
+
+## Set the failure policy for the webhook. Allowed values are "Fail" and "Ignore".
+## Ref: https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#failure-policy
+failurePolicy: Fail

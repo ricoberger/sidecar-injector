@@ -27,3 +27,4 @@ webhooks:
     admissionReviewVersions: ["v1"]
     sideEffects: None
     timeoutSeconds: 10
+    failurePolicy: {{ .Values.failurePolicy }}
