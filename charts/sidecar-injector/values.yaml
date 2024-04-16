@@ -132,3 +132,13 @@ namespaceSelector: {}
 ## Set the failure policy for the webhook. Allowed values are "Fail" and "Ignore".
 ## Ref: https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#failure-policy
 failurePolicy: Fail
+
+## Create a ServiceMonitor for the Prometheus Operator.
+## Ref: https://prometheus-operator.dev/docs/operator/api/#monitoring.coreos.com/v1.ServiceMonitor
+serviceMonitor:
+  enabled: false
+  labels: {}
+  interval: 10s
+  scrapeTimeout: 10s
+  honorLabels: true
+  relabelings: []
