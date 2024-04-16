@@ -45,7 +45,7 @@ pod:
 
 image:
   repository: ricoberger/sidecar-injector
-  tag: v0.8.2
+  tag: v0.8.3
   pullPolicy: IfNotPresent
 
 ## Specify security settings for the sidecar-injector Container. They override settings made at the Pod level via the
