@@ -29,7 +29,7 @@ var (
 type Injector struct {
 	Client  client.Client
 	Config  *Config
-	Decoder *admission.Decoder
+	Decoder admission.Decoder
 }
 
 func (i *Injector) Handle(ctx context.Context, req admission.Request) admission.Response {
