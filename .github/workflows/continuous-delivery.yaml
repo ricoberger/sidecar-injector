@@ -45,7 +45,7 @@ jobs:
           push: true
           context: .
           file: ./cmd/webhook/Dockerfile
-          platforms: linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8
+          platforms: linux/386,linux/amd64,linux/arm/v7,linux/arm64/v8
           tags: ricoberger/sidecar-injector:${{ env.TAG }}
 
       - name: Build and Push Docker Image (basicauth)
@@ -55,5 +55,5 @@ jobs:
           push: true
           context: .
           file: ./cmd/basicauth/Dockerfile
-          platforms: linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8
+          platforms: linux/386,linux/amd64,linux/arm/v7,linux/arm64/v8
           tags: ricoberger/sidecar-injector:${{ env.TAG }}-basicauth
