@@ -1,5 +1,4 @@
 FROM golang:1.22.3 as build
-RUN apk update && apk add git make
 WORKDIR /webhook
 COPY go.mod go.sum ./
 RUN go mod download
