@@ -1,4 +1,4 @@
-FROM golang:1.22.3-alpine3.18 as build
+FROM golang:1.22.3 as build
 RUN apk update && apk add git make
 WORKDIR /basicauth
 COPY go.mod go.sum ./
