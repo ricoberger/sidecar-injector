@@ -40,7 +40,7 @@ jobs:
 
       - name: Build and Push Docker Image (webhook)
         id: docker_build_webhook
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           push: true
           context: .
@@ -50,7 +50,7 @@ jobs:
 
       - name: Build and Push Docker Image (basicauth)
         id: docker_build_basicauth
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           push: true
           context: .
