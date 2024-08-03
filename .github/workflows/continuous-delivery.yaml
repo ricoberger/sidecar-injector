@@ -38,6 +38,13 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build and Push Docker Image (webhook)
         id: docker_build_webhook
         uses: docker/build-push-action@v6
@@ -46,7 +53,11 @@ jobs:
           context: .
           file: ./cmd/webhook/Dockerfile
           platforms: linux/386,linux/amd64,linux/arm/v7,linux/arm64/v8
-          tags: ricoberger/sidecar-injector:${{ env.TAG }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: |
+            ghcr.io/${{ github.repository }}:${{ env.TAG }}
+            ricoberger/sidecar-injector:${{ env.TAG }}
 
       - name: Build and Push Docker Image (basicauth)
         id: docker_build_basicauth
@@ -56,4 +67,8 @@ jobs:
           context: .
           file: ./cmd/basicauth/Dockerfile
           platforms: linux/386,linux/amd64,linux/arm/v7,linux/arm64/v8
-          tags: ricoberger/sidecar-injector:${{ env.TAG }}-basicauth
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: |
+            ghcr.io/${{ github.repository }}:${{ env.TAG }}-basicauth
+            ricoberger/sidecar-injector:${{ env.TAG }}-basicauth
