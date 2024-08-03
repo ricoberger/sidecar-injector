@@ -17,7 +17,7 @@ The configuration for the injected sidecars can be passed to the sidecar injecto
 config: |
   containers:
     - name: basic-auth
-      image: ricoberger/sidecar-injector:basic-auth
+      image: ghrc.io/ricoberger/sidecar-injector:basic-auth
       imagePullPolicy: Always
       env:
         - name: BASIC_AUTH_PASSWORD
