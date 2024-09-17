@@ -96,8 +96,6 @@ func main() {
 			return
 		}
 
-		fmt.Println(string(payload))
-
 		pair := strings.SplitN(string(payload), ":", 2)
 		if len(pair) != 2 {
 			handleFailedAuth(w)
