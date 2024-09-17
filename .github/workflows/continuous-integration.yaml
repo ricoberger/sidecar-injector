@@ -32,3 +32,4 @@ jobs:
         run: |
           make build-webhook
           make build-basicauth
+          make build-githubauth

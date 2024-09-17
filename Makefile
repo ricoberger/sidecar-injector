@@ -21,3 +21,11 @@ build-basicauth:
 		-X ${REPO}/pkg/version.BuildUser=${BUILDUSER} \
 		-X ${REPO}/pkg/version.BuildDate=${BUILDTIME}" \
 		-o ./bin/basicauth ./cmd/basicauth;
+
+build-githubauth:
+	@go build -ldflags "-X ${REPO}/pkg/version.Version=${VERSION} \
+		-X ${REPO}/pkg/version.Revision=${REVISION} \
+		-X ${REPO}/pkg/version.Branch=${BRANCH} \
+		-X ${REPO}/pkg/version.BuildUser=${BUILDUSER} \
+		-X ${REPO}/pkg/version.BuildDate=${BUILDTIME}" \
+		-o ./bin/githubauth ./cmd/githubauth;

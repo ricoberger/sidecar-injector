@@ -33,6 +33,17 @@ updates:
         patterns:
           - "*"
 
+  - package-ecosystem: "docker"
+    directory: "/cmd/githubauth"
+    schedule:
+      interval: "monthly"
+    assignees:
+      - "ricoberger"
+    groups:
+      docker-bacsicauth:
+        patterns:
+          - "*"
+
   - package-ecosystem: "gomod"
     directory: "/"
     schedule:

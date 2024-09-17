@@ -10,37 +10,40 @@ import (
 
 	"github.com/ricoberger/sidecar-injector/pkg/version"
 
+	"github.com/google/go-github/v65/github"
 	flag "github.com/spf13/pflag"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 )
 
 var (
-	address           string
-	basicAuthPassword string
-	basicAuthUsername string
-	basicAuthRealm    string
-	showVersion       bool
-	log               = logf.Log.WithName("basicauth")
+	address        string
+	basicAuthRealm string
+	organization   string
+	showVersion    bool
+	log            = logf.Log.WithName("githubauth")
 )
 
 // init is used to define all flags for external-authz.
 func init() {
 	defaultAddress := ":4180"
-	if os.Getenv("BASIC_AUTH_ADDRESS") != "" {
-		defaultAddress = os.Getenv("BASIC_AUTH_ADDRESS")
+	if os.Getenv("GITHUB_AUTH_ADDRESS") != "" {
+		defaultAddress = os.Getenv("GITHUB_AUTH_ADDRESS")
 	}
 
 	defaultRealm := "Restricted Access"
-	if os.Getenv("BASIC_AUTH_REALM") != "" {
-		defaultRealm = os.Getenv("BASIC_AUTH_REALM")
+	if os.Getenv("GITHUB_AUTH_REALM") != "" {
+		defaultRealm = os.Getenv("GITHUB_AUTH_REALM")
 	}
 
-	basicAuthPassword = os.Getenv("BASIC_AUTH_PASSWORD")
-	basicAuthUsername = os.Getenv("BASIC_AUTH_USERNAME")
+	defaultOrganization := ""
+	if os.Getenv("GITHUB_ORGANIZATION") != "" {
+		defaultOrganization = os.Getenv("GITHUB_ORGANIZATION")
+	}
 
 	flag.StringVar(&address, "address", defaultAddress, "The address, where the server is listen on.")
 	flag.StringVar(&basicAuthRealm, "realm", defaultRealm, "The realm for the basic authentication.")
+	flag.StringVar(&organization, "organization", defaultOrganization, "The GitHub organization to check if the user is a member of.")
 	flag.BoolVar(&showVersion, "version", false, "Print version information.")
 }
 
@@ -59,7 +62,7 @@ func main() {
 	// The short form of the version information is also printed in two lines, when the version option is set to
 	// "false".
 	if showVersion {
-		v, err := version.Print("basicauth")
+		v, err := version.Print("githubauth")
 		if err != nil {
 			log.Error(err, "Failed to print version information")
 			os.Exit(1)
@@ -93,8 +96,39 @@ func main() {
 			return
 		}
 
+		fmt.Println(string(payload))
+
 		pair := strings.SplitN(string(payload), ":", 2)
-		if len(pair) != 2 || pair[0] != basicAuthUsername || pair[1] != basicAuthPassword {
+		if len(pair) != 2 {
+			handleFailedAuth(w)
+			return
+		}
+
+		r.URL.User.Username()
+
+		client := github.NewClient(nil).WithAuthToken(pair[1])
+		user, _, err := client.Users.Get(r.Context(), "")
+		if err != nil {
+			log.Error(err, "Failed to get user information")
+			handleFailedAuth(w)
+			return
+		}
+
+		if !strings.EqualFold(user.GetLogin(), pair[0]) {
+			log.Error(fmt.Errorf("login does not match"), "Provided username does not match GitHub login", "organization", organization, "username", pair[0], "login", user.GetLogin())
+			handleFailedAuth(w)
+			return
+		}
+
+		isMember, _, err := client.Organizations.IsMember(r.Context(), organization, user.GetLogin())
+		if err != nil {
+			log.Error(err, "Failed to check if user is a member of the organization", "organization", organization, "login", user.GetLogin())
+			handleFailedAuth(w)
+			return
+		}
+
+		if !isMember {
+			log.Error(fmt.Errorf("isMember is false"), "User is not a member of the organization", "organization", organization, "login", user.GetLogin())
 			handleFailedAuth(w)
 			return
 		}
