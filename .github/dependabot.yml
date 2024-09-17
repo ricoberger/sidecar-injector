@@ -4,6 +4,8 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+    reviewers:
+      - "ricoberger"
     assignees:
       - "ricoberger"
     groups:
@@ -15,6 +17,8 @@ updates:
     directory: "/cmd/webhook"
     schedule:
       interval: "monthly"
+    reviewers:
+      - "ricoberger"
     assignees:
       - "ricoberger"
     groups:
@@ -26,6 +30,8 @@ updates:
     directory: "/cmd/basicauth"
     schedule:
       interval: "monthly"
+    reviewers:
+      - "ricoberger"
     assignees:
       - "ricoberger"
     groups:
@@ -37,6 +43,8 @@ updates:
     directory: "/cmd/githubauth"
     schedule:
       interval: "monthly"
+    reviewers:
+      - "ricoberger"
     assignees:
       - "ricoberger"
     groups:
@@ -48,6 +56,8 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    reviewers:
+      - "ricoberger"
     assignees:
       - "ricoberger"
     groups:
