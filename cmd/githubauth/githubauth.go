@@ -6,11 +6,14 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/ricoberger/sidecar-injector/pkg/version"
 
 	"github.com/google/go-github/v65/github"
+	"github.com/hashicorp/golang-lru/v2/expirable"
 	flag "github.com/spf13/pflag"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
@@ -20,6 +23,7 @@ var (
 	address        string
 	basicAuthRealm string
 	organization   string
+	cacheDuration  int
 	showVersion    bool
 	log            = logf.Log.WithName("githubauth")
 )
@@ -41,9 +45,19 @@ func init() {
 		defaultOrganization = os.Getenv("GITHUB_ORGANIZATION")
 	}
 
+	defaultCacheDuration := 86400
+	if os.Getenv("GITHUB_CACHE_DURATION") != "" {
+		defaultCacheDurationTmp := os.Getenv("GITHUB_CACHE_DURATION")
+		parsedCacheDuration, err := strconv.Atoi(defaultCacheDurationTmp)
+		if err == nil {
+			defaultCacheDuration = parsedCacheDuration
+		}
+	}
+
 	flag.StringVar(&address, "address", defaultAddress, "The address, where the server is listen on.")
 	flag.StringVar(&basicAuthRealm, "realm", defaultRealm, "The realm for the basic authentication.")
 	flag.StringVar(&organization, "organization", defaultOrganization, "The GitHub organization to check if the user is a member of.")
+	flag.IntVar(&cacheDuration, "cache-time", defaultCacheDuration, "The time to cache authenticated users in seconds. This is used to reduce the number of requests to GitHub.")
 	flag.BoolVar(&showVersion, "version", false, "Print version information.")
 }
 
@@ -75,6 +89,9 @@ func main() {
 	log.Info("Version information", version.Info()...)
 	log.Info("Build context", version.BuildContext()...)
 
+	log.Info("Create cache", "seconds", cacheDuration)
+	cache := expirable.NewLRU[string, string](1000, nil, time.Second*time.Duration(cacheDuration))
+
 	// Create and start the http server. The server has just two routes, one which can be used for the Kubernetes health
 	// check and another one to handle verify credentials for basic authentication.
 	router := http.NewServeMux()
@@ -102,7 +119,13 @@ func main() {
 			return
 		}
 
-		r.URL.User.Username()
+		if val, ok := cache.Get(strings.ToLower(pair[0])); ok {
+			if val == pair[1] {
+				log.Info("User is already authenticated", "username", pair[0])
+				w.WriteHeader(http.StatusOK)
+				return
+			}
+		}
 
 		client := github.NewClient(nil).WithAuthToken(pair[1])
 		user, _, err := client.Users.Get(r.Context(), "")
@@ -131,6 +154,7 @@ func main() {
 			return
 		}
 
+		cache.Add(strings.ToLower(pair[0]), pair[1])
 		w.WriteHeader(http.StatusOK)
 	})
 
