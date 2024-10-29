@@ -1,6 +1,7 @@
+---
 apiVersion: v2
 name: sidecar-injector
 description: Sidecar Injector
 type: application
-version: 0.11.1
-appVersion: v0.11.0
+version: 0.11.2
+appVersion: v0.12.0
