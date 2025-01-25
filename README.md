@@ -7,8 +7,7 @@ The sidecar injector can be used to inject a sidecar into a Pod via a [Mutating 
 The sidecar injector can be installed via Helm. To use the Helm [cert-manager](https://cert-manager.io) is required.
 
 ```sh
-helm repo add ricoberger https://ricoberger.github.io/helm-charts
-helm install sidecar-injector ricoberger/sidecar-injector
+helm upgrade --install sidecar-injector oci://ghcr.io/ricoberger/charts/sidecar-injector --version 1.0.0
 ```
 
 The configuration for the injected sidecars can be passed to the sidecar injector via the `config` value in the Helm chart. The following configuration injects the basic auth sidecar:

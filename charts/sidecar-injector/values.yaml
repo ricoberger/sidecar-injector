@@ -1,3 +1,4 @@
+---
 # Default values for sidecar-injector.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
@@ -12,14 +13,14 @@ replicas: 1
 ## See: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 ##
 imagePullSecrets: []
-  # - name: regcred
+# - name: regcred
 
 ## Specify security settings for the created Pods. To set the security settings for the sidecar-injector Container use
 ## the corresponding "securityContext" field.
 ## See: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
 ##
 podSecurityContext: {}
-  # fsGroup: 2000
+# fsGroup: 2000
 
 ## Specify a map of key-value pairs, to assign the Pods to a specific set of nodes.
 ## See: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
@@ -45,7 +46,7 @@ pod:
 
 image:
   repository: ghcr.io/ricoberger/sidecar-injector
-  tag: v0.12.0
+  tag: ""
   pullPolicy: IfNotPresent
 
 ## Specify security settings for the sidecar-injector Container. They override settings made at the Pod level via the
@@ -53,12 +54,12 @@ image:
 ## See: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
 ##
 securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
+# capabilities:
+#   drop:
+#   - ALL
+# readOnlyRootFilesystem: true
+# runAsNonRoot: true
+# runAsUser: 1000
 
 ## We usually recommend not to specify default resources and to leave this as a conscious choice for the user. This
 ## also increases chances charts run on environments with little resources, such as Minikube. If you do want to
@@ -66,12 +67,12 @@ securityContext: {}
 ## 'resources:'.
 ##
 resources: {}
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+# limits:
+#   cpu: 100m
+#   memory: 128Mi
+# requests:
+#   cpu: 100m
+#   memory: 128Mi
 
 ## Specify additional environment variables for the sidecar-injector container.
 ##
@@ -108,26 +109,26 @@ service:
 ## See: https://kubernetes.io/docs/tasks/run-application/configure-pdb
 ##
 podDisruptionBudget: {}
-  # maxUnavailable: 1
+# maxUnavailable: 1
 
 ## Topology spread constraints rely on node labels to identify the topology domain(s) that each Node is in.
 ## Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/
 ##
 topologySpreadConstraints: []
-  # - maxSkew: 1
-  #   topologyKey: topology.kubernetes.io/zone
-  #   whenUnsatisfiable: DoNotSchedule
-  #   labelSelector:
-  #     matchLabels:
-  #       app.kubernetes.io/name: sidecar-injector
+# - maxSkew: 1
+#   topologyKey: topology.kubernetes.io/zone
+#   whenUnsatisfiable: DoNotSchedule
+#   labelSelector:
+#     matchLabels:
+#       app.kubernetes.io/name: sidecar-injector
 
 ## Limit which requests for namespaced resources are intercepted by the sidecar-injector, based on the labels of the
 ## containing namespace.
 ## Ref: https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#matching-requests-namespaceselector
 ##
 namespaceSelector: {}
-  # matchLabels:
-  #   sidecar-injector.ricoberger.de: enabled
+# matchLabels:
+#   sidecar-injector.ricoberger.de: enabled
 
 ## Set the failure policy for the webhook. Allowed values are "Fail" and "Ignore".
 ## Ref: https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#failure-policy
