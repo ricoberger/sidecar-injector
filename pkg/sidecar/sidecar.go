@@ -92,7 +92,6 @@ func (i *Injector) getResourcesToInject(req admission.Request, pod *corev1.Pod) 
 	}
 
 	return initContainers, containers, volumes, true, nil
-
 }
 
 func (i *Injector) Handle(ctx context.Context, req admission.Request) admission.Response {
