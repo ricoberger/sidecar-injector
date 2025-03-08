@@ -4,8 +4,16 @@ import (
 	"os"
 
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
 )
+
+type InjectorData struct {
+	Selector       metav1.LabelSelector `yaml:"selector"`
+	Containers     []string             `yaml:"container"`
+	InitContainers []string             `yaml:"initContainers"`
+	Volumes        []string             `yaml:"volumes"`
+}
 
 type EnvironmentVariable struct {
 	Name       string `yaml:"name"`
@@ -14,6 +22,7 @@ type EnvironmentVariable struct {
 }
 
 type Config struct {
+	Injectors            []InjectorData        `yaml:"injectors"`
 	Containers           []corev1.Container    `yaml:"containers"`
 	Volumes              []corev1.Volume       `yaml:"volumes"`
 	EnvironmentVariables []EnvironmentVariable `yaml:"environmentVariables"`
