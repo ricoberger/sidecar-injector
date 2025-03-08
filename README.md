@@ -1,19 +1,31 @@
 # Sidecar Injector
 
-The sidecar injector can be used to inject a sidecar into a Pod via a [Mutating Webhook](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/).
+The sidecar injector can be used to inject a sidecar into a Pod via a
+[Mutating Webhook](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/).
 
 ## Usage
 
-The sidecar injector can be installed via Helm. To use the Helm [cert-manager](https://cert-manager.io) is required.
+The sidecar injector can be installed via Helm. To use the Helm
+[cert-manager](https://cert-manager.io) is required.
 
 ```sh
 helm upgrade --install sidecar-injector oci://ghcr.io/ricoberger/charts/sidecar-injector --version 1.0.0
 ```
 
-The configuration for the injected sidecars can be passed to the sidecar injector via the `config` value in the Helm chart. The following configuration injects the basic auth sidecar:
+The configuration for the injected sidecars can be passed to the sidecar
+injector via the `config` value in the Helm chart. The following configuration
+injects the basic auth sidecar:
 
 ```yaml
 config: |
+  injectors:
+    selector:
+      matchLabels:
+        useBasicAuth: "true"
+    containers:
+      - basic-auth
+    initContainers: []
+    volumes: []
   containers:
     - name: basic-auth
       image: ghrc.io/ricoberger/sidecar-injector:basic-auth
@@ -55,18 +67,34 @@ config: |
   environmentVariables: []
 ```
 
-You can also define a list of volumes and a list of environment variables, which should be set from Pod annotations.
+You can also define a list of volumes and a list of environment variables, which
+should be set from Pod annotations.
 
-When the sidecar injector is installed in your cluster you have to set some annotation for your Pods:
+When the sidecar injector is installed in your cluster you have to set some
+annotation for your Pods:
 
-- `sidecar-injector.ricoberger.de: enabled`: Enable the sidecar injection for a Pod.
-- `sidecar-injector.ricoberger.de/containers: <CONTAINER-NAME-1>,<CONTAINER-NAME-2>`: Comma-separated list of container names, which should be used from the configuration file.
-- `sidecar-injector.ricoberger.de/init-containers: <CONTAINER-NAME-1>,<CONTAINER-NAME-2>`: Comma-separated list of container names, which should be used from the configuration file as init containers.
-- `sidecar-injector.ricoberger.de/volumes: <VOLUME-NAME-1>,<VOLUME-NAME-2>`: Comma-separated list of volume names, which should be used from the configuration file.
+- `sidecar-injector.ricoberger.de: enabled`: Enable the sidecar injection for a
+  Pod.
+- `sidecar-injector.ricoberger.de/containers: <CONTAINER-NAME-1>,<CONTAINER-NAME-2>`:
+  Comma-separated list of container names, which should be used from the
+  configuration file.
+- `sidecar-injector.ricoberger.de/init-containers: <CONTAINER-NAME-1>,<CONTAINER-NAME-2>`:
+  Comma-separated list of container names, which should be used from the
+  configuration file as init containers.
+- `sidecar-injector.ricoberger.de/volumes: <VOLUME-NAME-1>,<VOLUME-NAME-2>`:
+  Comma-separated list of volume names, which should be used from the
+  configuration file.
+
+The sidecars which should be injected can also be defined via the `injectors`
+field in the configuration. This can be used to inject sidecars without the need
+of defining them via annotations. Instead the `selector` can be used to defined
+the Pods which should have a sidecar injected.
 
 ### Environment Variables
 
-It is possible to set additional environment variables for the injected sidecar via annotations. The environment variables which can be injected must be defined in the `environmentVariables` section in the config, e.g.
+It is possible to set additional environment variables for the injected sidecar
+via annotations. The environment variables which can be injected must be defined
+in the `environmentVariables` section in the config, e.g.
 
 ```yaml
 config: |
@@ -76,7 +104,9 @@ config: |
       annotation: sidecar-injector.ricoberger.de/envname
 ```
 
-With this configuration a user can then use the `sidecar-injector.ricoberger.de/envname` annotation to set the value of the `ENV_NAME` environment variable in the specified `<CONTAINER-NAME>`:
+With this configuration a user can then use the
+`sidecar-injector.ricoberger.de/envname` annotation to set the value of the
+`ENV_NAME` environment variable in the specified `<CONTAINER-NAME>`:
 
 ```yaml
 ---
@@ -98,7 +128,9 @@ spec:
 
 ### Resources
 
-Since the injected sidecars might need different resources depending on the service where they are injected it is also possible to overwrite the CPU Requests / Limits and Memory Requests and Limits via an annotation:
+Since the injected sidecars might need different resources depending on the
+service where they are injected it is also possible to overwrite the CPU
+Requests / Limits and Memory Requests and Limits via an annotation:
 
 - `sidecar-injector.ricoberger.de/containers/<CONTAINER-NAME>/cpurequests`
 - `sidecar-injector.ricoberger.de/containers/<CONTAINER-NAME>/cpulimits`
