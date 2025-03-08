@@ -24,9 +24,15 @@ jobs:
         run: |
           go mod download
 
+      - name: Lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
+          args: --timeout 3m
+
       - name: Test
         run: |
-          go test ./...
+          make test
 
       - name: Build
         run: |

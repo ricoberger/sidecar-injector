@@ -159,8 +159,9 @@ func main() {
 	})
 
 	server := &http.Server{
-		Addr:    address,
-		Handler: router,
+		Addr:              address,
+		Handler:           router,
+		ReadHeaderTimeout: 5 * time.Second,
 	}
 
 	if err := server.ListenAndServe(); err != http.ErrServerClosed {

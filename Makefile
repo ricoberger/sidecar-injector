@@ -5,7 +5,7 @@ REPO      ?= github.com/ricoberger/sidecar-injector
 REVISION  ?= $(shell git rev-parse HEAD)
 VERSION   ?= $(shell git describe --tags)
 
-.PHONY: build
+.PHONY: build-webhook
 build-webhook:
 	@go build -ldflags "-X ${REPO}/pkg/version.Version=${VERSION} \
 		-X ${REPO}/pkg/version.Revision=${REVISION} \
@@ -14,6 +14,7 @@ build-webhook:
 		-X ${REPO}/pkg/version.BuildDate=${BUILDTIME}" \
 		-o ./bin/webhook ./cmd/webhook;
 
+.PHONY: build-basicauth
 build-basicauth:
 	@go build -ldflags "-X ${REPO}/pkg/version.Version=${VERSION} \
 		-X ${REPO}/pkg/version.Revision=${REVISION} \
@@ -22,6 +23,7 @@ build-basicauth:
 		-X ${REPO}/pkg/version.BuildDate=${BUILDTIME}" \
 		-o ./bin/basicauth ./cmd/basicauth;
 
+.PHONY: build-githubauth
 build-githubauth:
 	@go build -ldflags "-X ${REPO}/pkg/version.Version=${VERSION} \
 		-X ${REPO}/pkg/version.Revision=${REVISION} \
@@ -29,3 +31,9 @@ build-githubauth:
 		-X ${REPO}/pkg/version.BuildUser=${BUILDUSER} \
 		-X ${REPO}/pkg/version.BuildDate=${BUILDTIME}" \
 		-o ./bin/githubauth ./cmd/githubauth;
+
+.PHONY: test
+test:
+	# Run tests and generate coverage report. To view the coverage report in a
+	# browser run "go tool cover -html=coverage.out".
+	go test -covermode=atomic -coverpkg=./... -coverprofile=coverage.out -v ./...
