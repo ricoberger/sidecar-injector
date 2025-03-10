@@ -146,7 +146,11 @@ func (i *Injector) Handle(ctx context.Context, req admission.Request) admission.
 		pod.Spec.Volumes = append(pod.Spec.Volumes, volume)
 	}
 
-	pod.Annotations[annotationStatusKey] = "injected"
+	if pod.Annotations == nil {
+		pod.Annotations = map[string]string{annotationStatusKey: "injected"}
+	} else {
+		pod.Annotations[annotationStatusKey] = "injected"
+	}
 
 	marshaledPod, err := json.Marshal(pod)
 	if err != nil {
@@ -161,7 +165,7 @@ func (i *Injector) Handle(ctx context.Context, req admission.Request) admission.
 func getContainer(name string, containers []corev1.Container) (corev1.Container, error) {
 	for _, container := range containers {
 		if container.Name == name {
-			return container, nil
+			return *container.DeepCopy(), nil
 		}
 	}
 
@@ -184,10 +188,10 @@ func addEnvVariables(container corev1.Container, annotations map[string]string, 
 }
 
 func setResources(container corev1.Container, annotationKey string, annotations map[string]string) corev1.Container {
-	cpuRequestsAnnotation := fmt.Sprintf("%s/%s/%s", annotationKey, container.Name, "cpurequests")
-	cpuLimitsAnnotation := fmt.Sprintf("%s/%s/%s", annotationKey, container.Name, "cpulimits")
-	memoryRequestsAnnotation := fmt.Sprintf("%s/%s/%s", annotationKey, container.Name, "memoryrequests")
-	memoryLimitsAnnotation := fmt.Sprintf("%s/%s/%s", annotationKey, container.Name, "memorylimits")
+	cpuRequestsAnnotation := fmt.Sprintf("%s-%s-%s", annotationKey, container.Name, "cpurequests")
+	cpuLimitsAnnotation := fmt.Sprintf("%s-%s-%s", annotationKey, container.Name, "cpulimits")
+	memoryRequestsAnnotation := fmt.Sprintf("%s-%s-%s", annotationKey, container.Name, "memoryrequests")
+	memoryLimitsAnnotation := fmt.Sprintf("%s-%s-%s", annotationKey, container.Name, "memorylimits")
 
 	if val, ok := annotations[cpuRequestsAnnotation]; ok && val != "" {
 		quantity, err := resource.ParseQuantity(val)
