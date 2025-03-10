@@ -132,14 +132,14 @@ Since the injected sidecars might need different resources depending on the
 service where they are injected it is also possible to overwrite the CPU
 Requests / Limits and Memory Requests and Limits via an annotation:
 
-- `sidecar-injector.ricoberger.de/containers/<CONTAINER-NAME>/cpurequests`
-- `sidecar-injector.ricoberger.de/containers/<CONTAINER-NAME>/cpulimits`
-- `sidecar-injector.ricoberger.de/containers/<CONTAINER-NAME>/memoryrequests`
-- `sidecar-injector.ricoberger.de/containers/<CONTAINER-NAME>/memorylimits`
+- `sidecar-injector.ricoberger.de/containers-<CONTAINER-NAME>-cpurequests`
+- `sidecar-injector.ricoberger.de/containers-<CONTAINER-NAME>-cpulimits`
+- `sidecar-injector.ricoberger.de/containers-<CONTAINER-NAME>-memoryrequests`
+- `sidecar-injector.ricoberger.de/containers-<CONTAINER-NAME>-memorylimits`
 
 The same can be done for init containers by using the following annotations:
 
-- `sidecar-injector.ricoberger.de/init-containers/<CONTAINER-NAME>/cpurequests`
-- `sidecar-injector.ricoberger.de/init-containers/<CONTAINER-NAME>/cpulimits`
-- `sidecar-injector.ricoberger.de/init-containers/<CONTAINER-NAME>/memoryrequests`
-- `sidecar-injector.ricoberger.de/init-containers/<CONTAINER-NAME>/memorylimits`
+- `sidecar-injector.ricoberger.de/init-containers-<CONTAINER-NAME>-cpurequests`
+- `sidecar-injector.ricoberger.de/init-containers-<CONTAINER-NAME>-cpulimits`
+- `sidecar-injector.ricoberger.de/init-containers-<CONTAINER-NAME>-memoryrequests`
+- `sidecar-injector.ricoberger.de/init-containers-<CONTAINER-NAME>-memorylimits`
