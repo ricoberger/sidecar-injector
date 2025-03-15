@@ -28,7 +28,7 @@ config: |
     volumes: []
   containers:
     - name: basic-auth
-      image: ghrc.io/ricoberger/sidecar-injector:basic-auth
+      image: ghcr.io/ricoberger/sidecar-injector/basicauth:latest
       imagePullPolicy: Always
       env:
         - name: BASIC_AUTH_PASSWORD
