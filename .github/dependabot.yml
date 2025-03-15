@@ -8,6 +8,8 @@ updates:
       - "ricoberger"
     assignees:
       - "ricoberger"
+    labels:
+      - "changelog: changed"
     groups:
       github-actions:
         patterns:
@@ -21,6 +23,8 @@ updates:
       - "ricoberger"
     assignees:
       - "ricoberger"
+    labels:
+      - "changelog: changed"
     groups:
       docker-webhook:
         patterns:
@@ -34,6 +38,8 @@ updates:
       - "ricoberger"
     assignees:
       - "ricoberger"
+    labels:
+      - "changelog: changed"
     groups:
       docker-bacsicauth:
         patterns:
@@ -47,6 +53,8 @@ updates:
       - "ricoberger"
     assignees:
       - "ricoberger"
+    labels:
+      - "changelog: changed"
     groups:
       docker-bacsicauth:
         patterns:
@@ -60,6 +68,8 @@ updates:
       - "ricoberger"
     assignees:
       - "ricoberger"
+    labels:
+      - "changelog: changed"
     groups:
       gomod:
         patterns:
