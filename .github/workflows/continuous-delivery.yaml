@@ -16,11 +16,11 @@ jobs:
       matrix:
         image:
           - directory: "webhook"
-            image: "${{ github.repository }}"
+            image: "ghcr.io/${{ github.repository }}"
           - directory: "basicauth"
-            image: "${{ github.repository }}/basicauth"
+            image: "ghcr.io/${{ github.repository }}/basicauth"
           - directory: "githubauth"
-            image: "${{ github.repository }}/githubauth"
+            image: "ghcr.io/${{ github.repository }}/githubauth"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
