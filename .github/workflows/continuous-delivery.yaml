@@ -12,32 +12,36 @@ jobs:
   docker:
     name: Docker
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        image:
+          - directory: "webhook"
+            image: "${{ github.repository }}"
+          - directory: "basicauth"
+            image: "${{ github.repository }}/basicauth"
+          - directory: "githubauth"
+            image: "${{ github.repository }}/githubauth"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Set Docker Tag
-        id: tag
-        run: |
-          if [[ $GITHUB_REF == refs/tags/* ]]; then
-            echo TAG=${GITHUB_REF:10} >> $GITHUB_ENV
-          else
-            echo TAG=main >> $GITHUB_ENV
-          fi
+      - name: Docker Metadata
+        id: metadata
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ matrix.image.image }}
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{raw}}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
-      - name: Login to DockerHub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -52,41 +56,12 @@ jobs:
         with:
           push: true
           context: .
-          file: ./cmd/webhook/Dockerfile
+          file: ./cmd/${{ matrix.image.directory }}/Dockerfile
           platforms: linux/386,linux/amd64,linux/arm/v7,linux/arm64/v8
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          tags: |
-            ghcr.io/${{ github.repository }}:${{ env.TAG }}
-            ricoberger/sidecar-injector:${{ env.TAG }}
-
-      - name: Build and Push Docker Image (basicauth)
-        id: docker_build_basicauth
-        uses: docker/build-push-action@v6
-        with:
-          push: true
-          context: .
-          file: ./cmd/basicauth/Dockerfile
-          platforms: linux/386,linux/amd64,linux/arm/v7,linux/arm64/v8
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          tags: |
-            ghcr.io/${{ github.repository }}:${{ env.TAG }}-basicauth
-            ricoberger/sidecar-injector:${{ env.TAG }}-basicauth
-
-      - name: Build and Push Docker Image (githubauth)
-        id: docker_build_githubauth
-        uses: docker/build-push-action@v6
-        with:
-          push: true
-          context: .
-          file: ./cmd/githubauth/Dockerfile
-          platforms: linux/386,linux/amd64,linux/arm/v7,linux/arm64/v8
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          tags: |
-            ghcr.io/${{ github.repository }}:${{ env.TAG }}-githubauth
-            ricoberger/sidecar-injector:${{ env.TAG }}-githubauth
+          tags: ${{ steps.metadata.outputs.tags }}
+          labels: ${{ steps.metadata.outputs.labels }}
 
   helm:
     name: Helm
