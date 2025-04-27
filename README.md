@@ -9,7 +9,7 @@ The sidecar injector can be installed via Helm. To use the Helm
 [cert-manager](https://cert-manager.io) is required.
 
 ```sh
-helm upgrade --install sidecar-injector oci://ghcr.io/ricoberger/charts/sidecar-injector --version 1.0.0
+helm upgrade --install sidecar-injector oci://ghcr.io/ricoberger/charts/sidecar-injector --version <VERSION>
 ```
 
 The configuration for the injected sidecars can be passed to the sidecar
