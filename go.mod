@@ -5,8 +5,8 @@ go 1.25.4
 require (
 	github.com/google/go-github/v65 v65.0.0
 	github.com/hashicorp/golang-lru/v2 v2.0.7
-	github.com/onsi/ginkgo/v2 v2.27.2
-	github.com/onsi/gomega v1.38.2
+	github.com/onsi/ginkgo/v2 v2.27.3
+	github.com/onsi/gomega v1.38.3
 	github.com/spf13/pflag v1.0.10
 	k8s.io/api v0.34.2
 	k8s.io/apimachinery v0.34.2
