@@ -5,7 +5,7 @@ RUN go mod download
 COPY . .
 RUN export CGO_ENABLED=0 && make build-basicauth
 
-FROM alpine:3.23.0
+FROM alpine:3.23.2
 RUN apk update && apk add --no-cache ca-certificates
 RUN mkdir /basicauth
 COPY --from=build /basicauth/bin/basicauth /basicauth
