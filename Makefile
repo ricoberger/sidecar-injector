@@ -5,7 +5,7 @@ REPO      ?= github.com/ricoberger/sidecar-injector
 REVISION  ?= $(shell git rev-parse HEAD)
 VERSION   ?= $(shell git describe --tags)
 
-ENVTEST_K8S_VERSION = 1.30.0
+ENVTEST_K8S_VERSION = 1.35.0
 
 ifeq (,$(shell go env GOBIN))
 GOBIN=$(shell go env GOPATH)/bin
@@ -53,7 +53,7 @@ LOCALBIN ?= $(shell pwd)/bin
 $(LOCALBIN):
 	mkdir -p $(LOCALBIN)
 ENVTEST ?= $(LOCALBIN)/setup-envtest
-ENVTEST_VERSION ?= release-0.18
+ENVTEST_VERSION ?= release-0.23
 
 .PHONY: envtest
 envtest: $(ENVTEST)

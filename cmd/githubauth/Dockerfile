@@ -1,4 +1,4 @@
-FROM golang:1.25.6 AS build
+FROM golang:1.26.0 AS build
 WORKDIR /githubauth
 COPY go.mod go.sum ./
 RUN go mod download
