@@ -1,6 +1,6 @@
 module github.com/ricoberger/sidecar-injector
 
-go 1.26.1
+go 1.26.2
 
 require (
 	github.com/google/go-github/v65 v65.0.0
