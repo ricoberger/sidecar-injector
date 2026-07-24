@@ -5,7 +5,7 @@ RUN go mod download
 COPY . .
 RUN export CGO_ENABLED=0 && make build-githubauth
 
-FROM alpine:3.23.4
+FROM alpine:3.24.1
 RUN apk update && apk add --no-cache ca-certificates
 RUN mkdir /githubauth
 COPY --from=build /githubauth/bin/githubauth /githubauth
