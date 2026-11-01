@@ -5,13 +5,13 @@ go 1.27.0
 require (
 	github.com/google/go-github/v65 v65.0.0
 	github.com/hashicorp/golang-lru/v2 v2.0.7
-	github.com/onsi/ginkgo/v2 v2.33.0
+	github.com/onsi/ginkgo/v2 v2.33.1
 	github.com/onsi/gomega v1.44.0
 	github.com/spf13/pflag v1.0.10
-	k8s.io/api v0.37.1
-	k8s.io/apimachinery v0.37.1
-	k8s.io/client-go v0.37.1
-	sigs.k8s.io/controller-runtime v0.25.1
+	k8s.io/api v0.37.2
+	k8s.io/apimachinery v0.37.2
+	k8s.io/client-go v0.37.2
+	sigs.k8s.io/controller-runtime v0.25.2
 	sigs.k8s.io/yaml v1.6.0
 )
 
